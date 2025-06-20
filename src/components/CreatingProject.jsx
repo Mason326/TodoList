@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-export default function CreatingProject({onAdded, onCreated}) {
+export default function CreatingProject({onAdded, onCreated, changeAppearance}) {
     const title = useRef();
     const description = useRef();
     const date = useRef();
@@ -7,7 +7,8 @@ export default function CreatingProject({onAdded, onCreated}) {
     const [entered, setEntered ] = useState({
         titleEntered: "",
         descriptionEntered: "",
-        dateEntered: ""
+        dateEntered: "",
+        tasks: []
     });
 
     function handleChangeEntered(refname, fieldName) {
@@ -21,19 +22,25 @@ export default function CreatingProject({onAdded, onCreated}) {
 
     function handleSaveEntered(enteredValues) {
         const {titleEntered, descriptionEntered, dateEntered} = {...enteredValues};
-        titleEntered && descriptionEntered && dateEntered ? onCreated(enteredValues) : console.log("Не удалось");
+        if(titleEntered && descriptionEntered && dateEntered) {
+            onCreated({ ...enteredValues, tasks: [...enteredValues.tasks] });
+            changeAppearance(true);
+        }
+        else {
+            console.log("Не удалось");
+        }
     }
 
     return (
         <section id="create-project-container" className="my-48 m-auto w-8/12">
             <div className="flex justify-end w-11/12">
                 <p>
-                    <button className="mr-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100" onClick={() => onAdded(false)}>Cancel</button>
+                    <button className="mr-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100" onClick={() => {onAdded(false); changeAppearance(true)}}>Cancel</button>
                 </p>
                 <p>
                     <button 
                      className="py-2 px-6 rounded-lg items-center text-gray-200 bg-black bg-opacity-75 hover:bg-opacity-85 text-base"
-                     onClick={() => handleSaveEntered(entered)}
+                     onClick={() => {handleSaveEntered(entered)}}
                     >Save</button>
                 </p>
             </div>
