@@ -1,4 +1,4 @@
-export default function AsideComponent({onAdded, yourProjects}) {
+export default function AsideComponent({onAdded, yourProjects, onVisiblePage}) {
     return (
         <aside className="p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg">
             <h1 className="pt-12 uppercase pl-6 pr-24 pb-8">Your Projects</h1>
@@ -10,7 +10,9 @@ export default function AsideComponent({onAdded, yourProjects}) {
             </p>
             <section className="ml-6 min-w-max m-0">
                 <ul>
-                    {yourProjects.length > 0 && yourProjects.map((item) => <li key={`${item.titleEntered}_${item.dateEntered}`} className="p-2 text-gray-400 hover:bg-gray-800 mr-4">{item.titleEntered}</li>) }
+                    {yourProjects.length > 0 && yourProjects.map((item) => <li key={`${item.titleEntered}_${item.dateEntered}`} className="p-2 text-gray-400 hover:bg-gray-800 mr-4">
+                        <button onClick={() => onVisiblePage(yourProjects.indexOf(item))}>{item.titleEntered}</button>
+                    </li>) }
                 </ul>
             </section>
         </aside>
