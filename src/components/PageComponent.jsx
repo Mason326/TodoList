@@ -2,11 +2,11 @@ import { useRef, useState } from "react";
 export default function PageComponent({neededObj, onProjectDelete}) {
     const enteredTask = useRef();
     const [changed, setChanged] = useState(false);
+    const [taskDeleted, setTaskDeleted] = useState(false);
     const {titleEntered, dateEntered, descriptionEntered, tasks} = neededObj;
 
     function handleAddANewTask(taskName) {
         tasks.indexOf(taskName) === -1 && changed && taskName ? tasks.push(taskName) : console.log("Не удалось добавить task");
-        enteredTask.current = "";
         setChanged(false);
         console.log(tasks);
     }
@@ -16,6 +16,10 @@ export default function PageComponent({neededObj, onProjectDelete}) {
         enteredTask.current = event.target.value;
     }
 
+    function handleDeleteTask(index) {
+        tasks.splice(index, 1);
+        setTaskDeleted((prevState) => !prevState);
+    }
 
     return (
         <>
@@ -38,12 +42,12 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 </div>
                 <div>
                     <ul className="bg-slate-100 p-4 rounded-md">
-                        {tasks.map(item => 
+                        {tasks.length > 0 ? tasks.map(item => 
                                 <li className="flex min-w-96 m-2" key={item}>
                                     <p className="flex-grow text-lg">{item}</p>
-                                    <button className="mr-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-200">Clear</button>
+                                    <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-200">Clear</button>
                                 </li>
-                        )}
+                        ) : <li className="text-stone-400 h-8 text-xl">Add new task to see the result</li>}
                     </ul>
                 </div>
             </div>
