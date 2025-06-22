@@ -3,6 +3,7 @@ import MainDisplay from './components/MainDisplay';
 import AsideComponent from './components/AsideComponent';
 import { useState } from "react";
 import CreatingProject from './components/CreatingProject';
+import PageComponent from './components/PageComponent';
 
 function App() {
   const [addingProject, setAddingProject] = useState(false);
@@ -17,9 +18,6 @@ function App() {
   function handleChangeVisibilty(index) {
     setAddingProject(false);
     setPageVisibility(index);
-    console.log(createdProjects[index]);
-    console.log(index);
-    console.log(createdProjects);
   }
 
   function handleCreateNewProject(lastEneredValues) {
@@ -32,6 +30,15 @@ function App() {
     setAddingProject(false);
   }
 
+  function handleDeleteProject() {
+    const result = confirm(`Are You sure you want to delete project ${createdProjects[pageVisibility].titleEntered}?`);
+    if(result)
+    {
+      createdProjects.splice(pageVisibility, 1);
+      setPageVisibility(-1);
+    }
+}
+
   return (
     <div className="App flex min-h-screen">
       <AsideComponent
@@ -41,7 +48,7 @@ function App() {
       {addingProject ? <CreatingProject 
        onAdded={handleAddProject} 
        onCreated={handleCreateNewProject}/> :
-       pageVisibility !== -1 ? <h1>{createdProjects[pageVisibility].titleEntered}</h1> : <MainDisplay onAdded={handleAddProject}/>}
+       pageVisibility !== -1 ? <PageComponent neededObj={createdProjects[pageVisibility]} onProjectDelete={handleDeleteProject}/>: <MainDisplay onAdded={handleAddProject}/>}
     </div>
   );
 }

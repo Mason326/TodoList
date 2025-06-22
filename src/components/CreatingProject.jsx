@@ -7,7 +7,8 @@ export default function CreatingProject({onAdded, onCreated}) {
     const [entered, setEntered ] = useState({
         titleEntered: "",
         descriptionEntered: "",
-        dateEntered: ""
+        dateEntered: "",
+        tasks: []
     });
 
     function handleChangeEntered(refname, fieldName) {
