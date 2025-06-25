@@ -10,8 +10,8 @@ export default function AsideComponent({onAdded, yourProjects, onVisiblePage}) {
             </p>
             <section className="ml-6 min-w-max m-0">
                 <ul>
-                    {yourProjects.length > 0 && yourProjects.map((item) => <li key={`${item.titleEntered}_${item.dateEntered}`} className="p-2 text-gray-400 hover:bg-gray-800 mr-4">
-                        <button className="min-w-full min-h-full text-left" onClick={() => onVisiblePage(yourProjects.indexOf(item))}>{item.titleEntered}</button>
+                    {yourProjects.length > 0 && yourProjects.map((item) => <li key={`${item.titleEntered}_${item.dateEntered}`} className="text-gray-400 hover:bg-gray-800 mr-4">
+                        <button className="min-w-full min-h-full text-left p-2" onClick={() => onVisiblePage(yourProjects.indexOf(item))}>{item.titleEntered}</button>
                     </li>) }
                 </ul>
             </section>

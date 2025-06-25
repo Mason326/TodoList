@@ -1,23 +1,47 @@
-import { useRef, useState } from "react";
+import {  useState } from "react";
+import Checkbox from '@mui/material/Checkbox';
+
 export default function PageComponent({neededObj, onProjectDelete}) {
-    const enteredTask = useRef();
+    const [ enteredValue, setEnteredValue ] = useState("");
     const [changed, setChanged] = useState(false);
     const [taskDeleted, setTaskDeleted] = useState(false);
+    const [ chBoxStates, setChBoxStates ] = useState([]);
     const {titleEntered, dateEntered, descriptionEntered, tasks} = neededObj;
 
     function handleAddANewTask(taskName) {
-        tasks.indexOf(taskName) === -1 && changed && taskName ? tasks.push(taskName) : console.log("Не удалось добавить task");
-        setChanged(false);
-        console.log(tasks);
+        if(tasks.indexOf(taskName) === -1 && changed && taskName) {
+            tasks.push(taskName);
+            setChBoxStates((prev) => [...prev, false]);
+            setChanged(false);
+            setEnteredValue("");
+        }
+        else {
+            console.log("Не удалось добавить task")
+        }
     }
+
+    function handleChangeStateCheckbox(event, index) {
+        setChBoxStates((prev) => {
+            prev[index] = event.target.checked
+            console.log([...prev]);
+            return [...prev];
+        });
+    }
+
+    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
     function handleChangeInputText(event) {
         setChanged(true);
-        enteredTask.current = event.target.value;
+        setEnteredValue(event.target.value);
     }
 
     function handleDeleteTask(index) {
         tasks.splice(index, 1);
+        setChBoxStates(prev => {
+             prev.splice(index, 1);
+             console.log(prev);
+             return [...prev];
+        });
         setTaskDeleted((prevState) => !prevState);
     }
 
@@ -32,22 +56,27 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 </pre>
             </div>
             <div>
-                <button onClick={onProjectDelete} className="bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100">Delete</button>
+                <button onClick={onProjectDelete} className="bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500">Delete</button>
             </div>
             <div className="mt-10 w-9/12">
                 <h2 className="font-bold text-3xl">Tasks</h2>
                 <div className="flex justify-start my-4 items-center">
-                    <input ref={enteredTask} onChange={handleChangeInputText} type="text" className="bg-gray-200 h-8 outline-none p-2 focus:border-b-2 border-gray-600"/>
-                    <button onClick={() => handleAddANewTask(enteredTask.current)} className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100">Add Task</button>
+                    <input value={enteredValue} onChange={(event) => handleChangeInputText(event)} type="text" className="bg-gray-200 h-8 outline-none p-2 focus:border-b-2 border-gray-600"/>
+                    <button onClick={() => handleAddANewTask(enteredValue)} className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100">Add Task</button>
                 </div>
                 <div>
-                    <ul className="bg-slate-100 p-4 rounded-md">
+                    <ul className="rounded-md">
                         {tasks.length > 0 ? tasks.map(item => 
-                                <li className="flex min-w-96 m-2" key={item}>
-                                    <p className="flex-grow text-lg">{item}</p>
-                                    <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-200">Clear</button>
+                                <li className="flex items-center" key={item}>
+                                    <div className="mr-2">
+                                        <Checkbox {...label} onChange={(event) => handleChangeStateCheckbox(event, tasks.indexOf(item))} color="default"/>
+                                    </div>
+                                    <div className="flex min-w-96 px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
+                                        <p className={ chBoxStates[tasks.indexOf(item)] ? "flex-grow text-lg line-through" : "flex-grow text-lg"}>{item}</p>
+                                        <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500">Clear</button>
+                                    </div>
                                 </li>
-                        ) : <li className="text-stone-400 h-8 text-xl">Add new task to see the result</li>}
+                        ) : <li className="text-stone-300 h-8 text-xl">* Add new task to see the result</li>}
                     </ul>
                 </div>
             </div>
