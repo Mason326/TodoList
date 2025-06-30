@@ -1,8 +1,6 @@
-import CertainProject from "./CertainProject";
-
-export default function AsideComponent({onAdded, yourProjects, changeAppearance}) {
+export default function AsideComponent({onAdded, yourProjects, onVisiblePage}) {
     return (
-        <aside className="p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg min-h-0 min-w-0 max-w-72">
+        <aside className="p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg max-w-80">
             <h1 className="pt-12 uppercase pl-6 pr-24 pb-8">Your Projects</h1>
             <p className="ml-6">
                 <button className="p-2 mb-2 rounded-lg items-center text-gray-400 bg-gray-500 bg-opacity-25 hover:bg-opacity-35 text-sm" onClick={() => onAdded(true)}>
@@ -12,7 +10,9 @@ export default function AsideComponent({onAdded, yourProjects, changeAppearance}
             </p>
             <section className="ml-6 min-w-0 min-h-0 m-0">
                 <ul>
-                    {yourProjects.length > 0 && yourProjects.map(item => <CertainProject key={`${item.titleEntered}_${item.dateEntered}_${Math.random()}`} data={item} replaceMain={changeAppearance} />) }
+                    {yourProjects.length > 0 && yourProjects.map((item) => <li key={`${item.titleEntered}_${item.dateEntered}`} className="text-gray-400 hover:bg-gray-800 mr-4">
+                        <button className="min-w-full min-h-full text-left p-2" onClick={() => onVisiblePage(yourProjects.indexOf(item))}>{item.titleEntered}</button>
+                    </li>) }
                 </ul>
             </section>
         </aside>
