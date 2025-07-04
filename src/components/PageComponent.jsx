@@ -2,20 +2,28 @@ import {  useState, useRef } from "react";
 import Checkbox from '@mui/material/Checkbox';
 import Message from "./Message";
 
+let currTitle;
 export default function PageComponent({neededObj, onProjectDelete}) {
+    const {titleEntered, dateEntered, descriptionEntered, tasks, complete} = neededObj;
+
     const [ enteredValue, setEnteredValue ] = useState("");
     const [ complitedCount, setComplited ] = useState(0);
     const [ displayMessage, setDisplayMessage ] = useState(false);
-    const chkRefs = useRef([]); 
+    const chkRefs = useRef([]);
+    
+    if(currTitle !== titleEntered) {
+        currTitle = titleEntered;
+        setComplited(complete.completed);
+        chkRefs.current = [];
+        setEnteredValue("");
+    }
 
-    const {titleEntered, dateEntered, descriptionEntered, tasks} = neededObj;
     function handleAddANewTask(taskName) {
         if(tasks.indexOf(taskName) === -1 && taskName) {
             const words = taskName.split(" ");
             for(const word of words ) {
                 if(word.length > 55)
                 {
-                    console.log("nikak")
                     handleShowErrorMessage()
                     return;
                 }
@@ -33,7 +41,16 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
     function handleChangeCheckboxValue(event, index) {
-        setComplited(prev => event.target.checked ? ++prev : --prev);
+        setComplited(prev =>{
+            if(event.target.checked) {
+                const curr = ++prev;
+                complete.completed = curr;
+                return curr;
+            }
+            const curr = --prev;
+            complete.completed = curr;
+            return curr});
+
         chkRefs.current[index] = event.target.checked;
     }
 
@@ -51,7 +68,14 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     function handleDeleteTask(index) {
         tasks.splice(index, 1);
         const currentCheck = chkRefs.current[index];
-        setComplited(prev => currentCheck ? --prev : setComplited(prev));
+        setComplited(prev => { 
+            if(currentCheck) {
+                const curr = --prev;
+                complete.completed = curr;
+                return curr;
+            }
+            return setComplited(prev) }
+        );
         chkRefs.current.splice(index, 1);
     }
 

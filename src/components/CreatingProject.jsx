@@ -8,7 +8,10 @@ export default function CreatingProject({onAdded, onCreated}) {
         titleEntered: "",
         descriptionEntered: "",
         dateEntered: "",
-        tasks: []
+        tasks: [],
+        complete: {
+            completed: 0,
+        }
     });
 
     function handleChangeEntered(refname, fieldName) {
