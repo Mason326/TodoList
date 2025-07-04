@@ -11,6 +11,7 @@ export default function CreatingProject({onAdded, onCreated}) {
         tasks: [],
         complete: {
             completed: 0,
+            completedArr: []
         }
     });
 

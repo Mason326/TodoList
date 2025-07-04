@@ -7,14 +7,14 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     const {titleEntered, dateEntered, descriptionEntered, tasks, complete} = neededObj;
 
     const [ enteredValue, setEnteredValue ] = useState("");
-    const [ complitedCount, setComplited ] = useState(0);
+    const [ complitedCount, setComplited ] = useState(complete.completed);
     const [ displayMessage, setDisplayMessage ] = useState(false);
-    const chkRefs = useRef([]);
+    const chkRefs = useRef(complete.completedArr);
     
     if(currTitle !== titleEntered) {
         currTitle = titleEntered;
         setComplited(complete.completed);
-        chkRefs.current = [];
+        chkRefs.current = complete.completedArr;
         setEnteredValue("");
     }
 
@@ -29,7 +29,8 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 }
             }
             tasks.push(taskName);
-            chkRefs.current = [ ...chkRefs.current, false]
+            chkRefs.current.push(false);
+            // complete.completedArr = [ ...chkRefs.current ]
             setEnteredValue("");
         }
         else {
@@ -52,6 +53,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             return curr});
 
         chkRefs.current[index] = event.target.checked;
+        // complete.completedArr[index] = event.target.checked;
     }
 
     function handleShowErrorMessage() {
@@ -77,6 +79,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             return setComplited(prev) }
         );
         chkRefs.current.splice(index, 1);
+        // complete.completedArr.splice(index, 1);
     }
 
     return (
