@@ -1,19 +1,34 @@
 import './App.css';
 import MainDisplay from './components/MainDisplay';
 import AsideComponent from './components/AsideComponent';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CreatingProject from './components/CreatingProject';
 import PageComponent from './components/PageComponent';
 
 function App() {
   const [addingProject, setAddingProject] = useState(false);
   const [pageVisibility, setPageVisibility] = useState(-1);
-  const [createdProjects, setCreatedProjects] = useState([]);
+  const [createdProjects, setCreatedProjects] = useState(JSON.parse(localStorage.getItem("projects")) || []);
+
+  useEffect(() => {
+    localStorage.setItem("projects", JSON.stringify(createdProjects));
+  }, [createdProjects])
 
   function handleChangeMainVisibility(changeActive) {
     setMainAppearance(changeActive);
     setAddingProject(false);
   }
+
+  function doAutoSave() {
+    setCreatedProjects(prev => {
+      return prev.length > 0 ? [...prev] : []
+    });
+    window.onbeforeunload = null;
+  }
+
+  window.onbeforeunload = function() {
+    return doAutoSave();
+  };
 
   function handleAddProject(changeActive) {
     setAddingProject(changeActive);
@@ -27,6 +42,7 @@ function App() {
 
   function handleCreateNewProject(lastEnteredValues) {
     // console.log(lastEnteredValues);
+    console.log(createdProjects);
     setCreatedProjects((lastData) => {
       return [ {...lastEnteredValues, tasks: [...lastEnteredValues.tasks]}, ...lastData];
     });
