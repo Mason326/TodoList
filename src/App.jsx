@@ -16,11 +16,6 @@ function App() {
     localStorage.setItem("projects", JSON.stringify(createdProjects));
   }, [createdProjects])
 
-  function handleChangeMainVisibility(changeActive) {
-    setMainAppearance(changeActive);
-    setAddingProject(false);
-  }
-
   function doAutoSave() {
     setCreatedProjects(prev => {
       return prev.length > 0 ? [...prev] : []
@@ -43,8 +38,6 @@ function App() {
   }
 
   function handleCreateNewProject(lastEnteredValues) {
-    // console.log(lastEnteredValues);
-    // console.log(createdProjects);
     setCreatedProjects((lastData) => {
       return [ {...lastEnteredValues, tasks: [...lastEnteredValues.tasks]}, ...lastData];
     });

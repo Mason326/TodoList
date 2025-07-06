@@ -2,6 +2,7 @@ import {  useState, useRef } from "react";
 import can from "../../assets/can_16228887.png"
 import Checkbox from '@mui/material/Checkbox';
 import Message from "../notfifcations/Message";
+import TransparentButtonComponent from "../buttons/TransparentButtonComponent";
 
 let currTitle;
 export default function PageComponent({neededObj, onProjectDelete}) {
@@ -71,6 +72,17 @@ export default function PageComponent({neededObj, onProjectDelete}) {
         setEnteredValue(event.target.value);
     }
 
+    function handleDeleteAllCompleted() {
+        const indexes = [];
+        for(let i = 0; i < chkRefs.current.length; i++) {
+            if(chkRefs.current[i])
+                indexes.push(i);
+        }
+        for(const index of indexes) {
+            handleDeleteTask(index);
+        }
+    }
+
     function handleDeleteTask(index) {
         tasks.splice(index, 1);
         const currentCheck = chkRefs.current[index];
@@ -109,7 +121,10 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                     <textarea value={enteredValue} onChange={(event) => handleChangeInputText(event)} type="text" maxLength={250} className="bg-gray-200 h-12 outline-none p-2 focus:border-b-2 border-gray-600 min-h-12 max-h-24 w-64"/>
                     <button onClick={() => handleAddANewTask(enteredValue)} className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100">Add Task</button>
                 </div>
-                {chkRefs.current.length === complitedCount && chkRefs.current.length !== 0 ? <h2 className="my-4">Все задачи выполнены!</h2> : <h2 className="my-4">Выполненных задач: {complitedCount}</h2>}
+                <div className="flex justify-between">
+                    {chkRefs.current.length === complitedCount && chkRefs.current.length !== 0 ? <h2 className="my-4">All tasks are completed!</h2> : <h2 className="my-4">Completed Tasks: {complitedCount}</h2>}
+                    <TransparentButtonComponent clickEvent={handleDeleteAllCompleted}>Delete completed</TransparentButtonComponent>
+                </div>
                 <div className="flex gap-5">
                     <div className="w-full">
                         <h2 className="text-xl font-semibold">Uncomplited</h2>
