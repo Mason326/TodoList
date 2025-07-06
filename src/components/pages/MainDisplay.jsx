@@ -1,4 +1,4 @@
-import projects from "../assets/no-projects.png";
+import projects from "../../assets/no-projects.png";
 export default function MainDisplay({onAdded}) {
     return (
         <section id="main-container" className="p-6 items-center text-center min-w-max mx-auto my-48">

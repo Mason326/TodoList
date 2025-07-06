@@ -1,6 +1,7 @@
 import {  useState, useRef } from "react";
+import can from "../../assets/can_16228887.png"
 import Checkbox from '@mui/material/Checkbox';
-import Message from "./Message";
+import Message from "../notfifcations/Message";
 
 let currTitle;
 export default function PageComponent({neededObj, onProjectDelete}) {
@@ -10,6 +11,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     const [ complitedCount, setComplited ] = useState(complete.completed);
     const [ displayMessage, setDisplayMessage ] = useState(false);
     const chkRefs = useRef(complete.completedArr);
+    const invalidMessageText = useRef("Invalid input data");
     
     if(currTitle !== titleEntered) {
         currTitle = titleEntered;
@@ -24,7 +26,8 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             for(const word of words ) {
                 if(word.length > 55)
                 {
-                    handleShowErrorMessage()
+                    invalidMessageText.current = "Taskname has too large word!";
+                    handleShowErrorMessage();
                     return;
                 }
             }
@@ -34,8 +37,9 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             setEnteredValue("");
         }
         else {
-            console.log("Не удалось добавить task")
-            handleShowErrorMessage()
+            // console.log("Не удалось добавить task");
+            invalidMessageText.current = "This taskname isn't available!";
+            handleShowErrorMessage();
         }
     }
 
@@ -84,8 +88,8 @@ export default function PageComponent({neededObj, onProjectDelete}) {
 
     return (
         <section className="min-w-96 my-16 flex-grow flex flex-wrap h-full">
-            <div className="w-10/12">
-                <h1 className="font-bold text-4xl mb-4">{titleEntered}</h1>
+            <div className="w-9/12">
+                <h1 className="font-bold text-4xl mb-4 overflow-ellipsis">{titleEntered}</h1>
                 <p className="text-stone-400 text-lg mb-4">{new Date(dateEntered).toDateString()}</p>
                 <article className="text-lg max-width-full">
                     <p className="overflow-ellipsis font-mono">
@@ -94,8 +98,10 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 </article>
             </div>
             <div>
-                <button onClick={onProjectDelete} className="bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 mb-4">Delete</button>
-                {displayMessage && <Message text="Invalid input data" />}
+                <button onClick={onProjectDelete} title="Delete this project" className="bg-transparent py-2 px-6 rounded-lg mb-4 transform duration-500 hover:bg-gray-100">
+                    <img src={can} alt="Trash" className="w-10 h-10"/>
+                </button>
+                {displayMessage && <Message text={invalidMessageText.current} />}
             </div>
             <div className="mt-10 w-9/12 border-b-2 pb-5 min-h-[36rem]">
                 <h2 className="font-bold text-3xl">Tasks</h2>
