@@ -58,7 +58,6 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             return curr});
 
         chkRefs.current[index] = event.target.checked;
-        // complete.completedArr[index] = event.target.checked;
     }
 
     function handleShowErrorMessage() {
@@ -73,13 +72,13 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     }
 
     function handleDeleteAllCompleted() {
-        const indexes = [];
-        for(let i = 0; i < chkRefs.current.length; i++) {
-            if(chkRefs.current[i])
-                indexes.push(i);
-        }
-        for(const index of indexes) {
-            handleDeleteTask(index);
+        let arr = chkRefs.current;
+        let cntr = 0;
+        while(arr.filter(elem => elem).length > 0) {
+            if(arr[cntr])
+                arr = handleDeleteTask(cntr);
+            else
+                ++cntr;
         }
     }
 
@@ -95,7 +94,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             return setComplited(prev) }
         );
         chkRefs.current.splice(index, 1);
-        // complete.completedArr.splice(index, 1);
+        return chkRefs.current;
     }
 
     return (
