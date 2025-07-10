@@ -2,12 +2,14 @@ import { useState, useRef } from "react";
 import Message from "./notfifcations/Message";
 import ColoredButtonComponent from "./buttons/ColoredButtonComponent";
 import TransparentButtonComponent from "./buttons/TransparentButtonComponent";
-export default function CreatingProject({onAdded, onCreated}) {
+import ModalComponent from "./notfifcations/modal/ModalComponent";
+export default function CreatingProject({onAdded, onCreated, projectNames}) {
     const [errMessageVisible, setErrMessageVisible] = useState(false);
     const title = useRef();
     const description = useRef();
     const date = useRef();
     const invalidInputMessage = useRef("Invalid input data");
+
 
     const currentDate = new Date().toISOString().split("T")[0];
 
@@ -41,16 +43,29 @@ export default function CreatingProject({onAdded, onCreated}) {
     function handleSaveEntered(enteredValues) {
         const {titleEntered, descriptionEntered, dateEntered} = {...enteredValues};
         const words = titleEntered.split(" ");
-            for(const word of words ) {
-                if(word.length > 25)
-                {
-                    invalidInputMessage.current = "Taskname has too large word!";
+        for(const word of words ) {
+            if(word.length > 25)
+            {
+                invalidInputMessage.current = "Taskname has too large word!";
+                handleShowErrorMessage();
+                return;
+            }
+        }
+
+        if(titleEntered && descriptionEntered && dateEntered) {
+            if(projectNames.indexOf(titleEntered) === -1) {
+                
+                if(dateEntered >= currentDate)
+                    onCreated(enteredValues)
+                else {
+                    invalidInputMessage.current = "Invalid Due Date!";
                     handleShowErrorMessage();
-                    return;
                 }
             }
-        if(titleEntered && descriptionEntered && dateEntered) {
-            onCreated(enteredValues)
+            else {
+                invalidInputMessage.current = "Project name is already in use!";
+                handleShowErrorMessage();
+            }
         }
         else {
             invalidInputMessage.current = "Fields have to be filled!";
@@ -107,6 +122,7 @@ export default function CreatingProject({onAdded, onCreated}) {
                             type="date"
                             ref={date} 
                             min={currentDate}
+                            max="31.12.9999"
                             required 
                             className="bg-gray-200 w-11/12 h-12 outline-none p-2 focus:border-b-2 border-gray-600"
                             onChange={() => handleChangeEntered(date, "dateEntered")}/>

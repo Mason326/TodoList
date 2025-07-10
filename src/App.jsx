@@ -4,7 +4,8 @@ import AsideComponent from './components/AsideComponent';
 import { useState, useEffect, useRef } from "react";
 import CreatingProject from './components/CreatingProject';
 import PageComponent from './components/pages/PageComponent';
-import ModalComponent from "./components/notfifcations/ModalComponent";
+import ModalComponent from "./components/notfifcations/modal/ModalComponent";
+import DeleteProjectComponent from './components/notfifcations/modal/DeleteProjectComponent';
 
 function App() {
   const [addingProject, setAddingProject] = useState(false);
@@ -13,19 +14,8 @@ function App() {
   const dialog = useRef();
 
   useEffect(() => {
-    localStorage.setItem("projects", JSON.stringify(createdProjects));
+    sessionStorage.setItem("sessionProjects", JSON.stringify(createdProjects));
   }, [createdProjects])
-
-  function doAutoSave() {
-    setCreatedProjects(prev => {
-      return prev.length > 0 ? [...prev] : []
-    });
-    window.onbeforeunload = null;
-  }
-
-  window.onbeforeunload = function() {
-    return doAutoSave();
-  };
 
   function handleAddProject(changeActive) {
     setAddingProject(changeActive);
@@ -53,17 +43,26 @@ function App() {
       setPageVisibility(-1);
 }
 
+  function handleAddToLocalStorage() {
+    localStorage.setItem("projects", JSON.stringify(createdProjects));
+  } 
+
   return (
     <div className="App flex min-h-screen" id="app-container">
       <AsideComponent
        onAdded={handleAddProject}
        yourProjects={createdProjects}
-       onVisiblePage={handleChangeVisibilty}/>
+       onVisiblePage={handleChangeVisibilty}
+       onLocal={handleAddToLocalStorage}/>
       {addingProject ? <CreatingProject 
        onAdded={handleAddProject} 
-       onCreated={handleCreateNewProject}/> :
+       onCreated={handleCreateNewProject}
+       projectNames={createdProjects.map(elem => elem.titleEntered)}/> :
        pageVisibility !== -1 ? <PageComponent neededObj={createdProjects[pageVisibility]} onProjectDelete={handleShowModal}/>: <MainDisplay onAdded={handleAddProject}/>}
-       {pageVisibility !== -1 && <ModalComponent ref={dialog} deleteHandle={handleDeleteProject} projectName={createdProjects[pageVisibility].titleEntered}></ModalComponent>}
+       {pageVisibility !== -1 && 
+        <ModalComponent ref={dialog}>
+            <DeleteProjectComponent onDeleteProject={handleDeleteProject} projectTitle={createdProjects[pageVisibility].titleEntered}/>
+        </ModalComponent>}
     </div>
   );
 }

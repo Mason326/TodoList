@@ -34,11 +34,9 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             }
             tasks.push(taskName);
             chkRefs.current.push(false);
-            // complete.completedArr = [ ...chkRefs.current ]
             setEnteredValue("");
         }
         else {
-            // console.log("Не удалось добавить task");
             invalidMessageText.current = "This taskname isn't available!";
             handleShowErrorMessage();
         }
@@ -128,7 +126,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                     <div className="w-full">
                         <h2 className="text-xl font-semibold">Uncomplited</h2>
                         <ul className="rounded-md min-h-full">
-                            {tasks.length > 0 ? tasks.map(item => 
+                            {tasks.length - complitedCount > 0 ? tasks.map(item => 
                                     <li className={chkRefs.current[tasks.indexOf(item)] ? "items-center hidden" : "flex items-center"} key={item}>
                                         <div className="mr-2">
                                             <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={false} color="default"/>
@@ -138,7 +136,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                                             <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500">Clear</button>
                                         </div>
                                     </li>
-                            ) : <li className="text-stone-300 h-8 text-xl">* Add new task to see the result</li>}
+                            ) : <li className="text-stone-300 h-8 text-xl">* Here tasks you need to do</li>}
                         </ul>
                     </div>
                     <div className="w-full">
@@ -150,7 +148,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                                             <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={true} color="default"/>
                                         </div>
                                         <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
-                                            <p className="flex-grow">{item}</p>
+                                            <p className="flex-grow line-through">{item}</p>
                                             <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500">Clear</button>
                                         </div>
                                     </li>
