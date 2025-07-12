@@ -18,14 +18,12 @@ export default function AsideComponent({onAdded, yourProjects, onVisiblePage, on
                     </li>) }
                 </ul>
             </section>
-            <div className="flex justify-center">
-                <button className="p-2 mb-2 rounded-lg items-center text-gray-400 bg-gray-500 bg-opacity-25  transform duration-500 hover:bg-opacity-35 hover:text-gray-200 text-sm my-4" onClick={onLocal}>
-                    <span className="flex justify-between gap-2 items-center">
-                        <img src={floppy} alt="floppy" className="ml-2 w-[1.5rem] h-[1.5rem]"/>
-                        <p className="py-2 pr-2 text-base">Save projects</p>
-                    </span>
-                </button>
-            </div>
+            <button className="ml-6 p-2 mb-2 rounded-lg items-center text-gray-400 bg-gray-500 bg-opacity-25  transform duration-500 hover:bg-opacity-35 hover:text-gray-200 text-sm my-4" onClick={onLocal}>
+                <span className="flex justify-between gap-2 items-center">
+                    <img src={floppy} alt="floppy" className="ml-2 w-[1.5rem] h-[1.5rem]"/>
+                    <p className="py-2 pr-2 text-base">Save changes</p>
+                </span>
+            </button>
         </aside>
     );  
 }

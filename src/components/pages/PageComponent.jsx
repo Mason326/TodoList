@@ -110,7 +110,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 <button onClick={onProjectDelete} title="Delete this project" className="bg-transparent py-2 px-6 rounded-lg mb-4 transform duration-500 hover:bg-gray-100">
                     <img src={can} alt="Trash" className="w-10 h-10"/>
                 </button>
-                {displayMessage && <Message text={invalidMessageText.current} />}
+                {displayMessage && <Message text={invalidMessageText.current}/>}
             </div>
             <div className="mt-10 w-9/12 border-b-2 pb-5 min-h-[36rem]">
                 <h2 className="font-bold text-3xl">Tasks</h2>

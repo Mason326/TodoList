@@ -1,21 +1,20 @@
 import './App.css';
 import MainDisplay from './components/pages/MainDisplay';
 import AsideComponent from './components/AsideComponent';
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import CreatingProject from './components/CreatingProject';
 import PageComponent from './components/pages/PageComponent';
 import ModalComponent from "./components/notfifcations/modal/ModalComponent";
-import DeleteProjectComponent from './components/notfifcations/modal/DeleteProjectComponent';
+import Message from './components/notfifcations/Message';
+
 
 function App() {
   const [addingProject, setAddingProject] = useState(false);
   const [pageVisibility, setPageVisibility] = useState(-1);
   const [createdProjects, setCreatedProjects] = useState(JSON.parse(localStorage.getItem("projects")) || []);
-  const dialog = useRef();
+  const [displaySaveMessage, setDisplaySaveMessage] = useState(false);
 
-  useEffect(() => {
-    sessionStorage.setItem("sessionProjects", JSON.stringify(createdProjects));
-  }, [createdProjects])
+  const dialog = useRef();
 
   function handleAddProject(changeActive) {
     setAddingProject(changeActive);
@@ -45,6 +44,10 @@ function App() {
 
   function handleAddToLocalStorage() {
     localStorage.setItem("projects", JSON.stringify(createdProjects));
+    setDisplaySaveMessage(true);
+        setTimeout(() => {
+          setDisplaySaveMessage(false)
+        }, 5000)
   } 
 
   return (
@@ -60,9 +63,11 @@ function App() {
        projectNames={createdProjects.map(elem => elem.titleEntered)}/> :
        pageVisibility !== -1 ? <PageComponent neededObj={createdProjects[pageVisibility]} onProjectDelete={handleShowModal}/>: <MainDisplay onAdded={handleAddProject}/>}
        {pageVisibility !== -1 && 
-        <ModalComponent ref={dialog}>
-            <DeleteProjectComponent onDeleteProject={handleDeleteProject} projectTitle={createdProjects[pageVisibility].titleEntered}/>
-        </ModalComponent>}
+        <ModalComponent ref={dialog} 
+        onDeleteProject={handleDeleteProject}
+        projectTitle={createdProjects[pageVisibility].titleEntered}/>
+       }
+      {displaySaveMessage && <Message text="saved" isSaving /> }
     </div>
   );
 }
