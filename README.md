@@ -5,6 +5,6 @@
 Инструкция по запуску:
 1. Клонировать репозиторий
 2. Перейти в папку с проектом
-3. npm install -D tailwindcss@3 postcss autoprefixer
+3. npm i
 4. npm run dev
 

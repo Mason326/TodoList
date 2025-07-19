@@ -2,7 +2,6 @@ import { useState, useRef } from "react";
 import Message from "./notfifcations/Message";
 import ColoredButtonComponent from "./buttons/ColoredButtonComponent";
 import TransparentButtonComponent from "./buttons/TransparentButtonComponent";
-import ModalComponent from "./notfifcations/modal/ModalComponent";
 export default function CreatingProject({onAdded, onCreated, projectNames}) {
     const [errMessageVisible, setErrMessageVisible] = useState(false);
     const title = useRef();
@@ -42,15 +41,6 @@ export default function CreatingProject({onAdded, onCreated, projectNames}) {
 
     function handleSaveEntered(enteredValues) {
         const {titleEntered, descriptionEntered, dateEntered} = {...enteredValues};
-        const words = titleEntered.split(" ");
-        for(const word of words ) {
-            if(word.length > 25)
-            {
-                invalidInputMessage.current = "Taskname has too large word!";
-                handleShowErrorMessage();
-                return;
-            }
-        }
 
         if(titleEntered && descriptionEntered && dateEntered) {
             if(projectNames.indexOf(titleEntered) === -1) {
@@ -75,7 +65,7 @@ export default function CreatingProject({onAdded, onCreated, projectNames}) {
 
     return (
         <>
-            <section id="create-project-container" className="m-auto pb-48 w-8/12">
+            <section id="create-project-container" className="m-auto pb-48 w-8/12 2xl:w-10/12">
                 <div className="mb-24 flex justify-end w-11/12">
                     {errMessageVisible && <Message text={invalidInputMessage.current} />}
                 </div>
@@ -91,43 +81,41 @@ export default function CreatingProject({onAdded, onCreated, projectNames}) {
                         </ColoredButtonComponent>
                     </p>
                 </div>
-                <div className="text-start">
-                    <label className="uppercase">Title</label>
+                <div className="text-start 2xl:mb-2">
+                    <label className="uppercase xl:text-lg">Title</label>
                     <p>
                         <input 
                         ref={title}
                         required
                         type="text"
                         maxLength={81}
-                        className="bg-gray-200 w-11/12 h-12 outline-none p-2 focus:border-b-2 border-gray-600"
+                        className="bg-gray-200 w-11/12 h-12 outline-none p-2 focus:border-b-2 border-gray-600 xl:text-lg 2xl:text-xl 2xl:h-14"
                         onChange={() => handleChangeEntered(title, "titleEntered")}/>
                     </p>
                 </div>
-                <div className="text-start">
-                    <label className="uppercase">Description</label>
+                <div className="text-start 2xl:mb-2">
+                    <label className="uppercase xl:text-lg">Description</label>
                     <p>
                         <textarea 
                         ref={description} 
                         required
-                        maxLength={500}
-                        className="bg-gray-200 w-11/12 h-24 min-h-24 max-h-72 outline-none p-2  focus:border-b-2 border-gray-600"
+                        maxLength={150}
+                        className="bg-gray-200 w-11/12 h-24 min-h-24 max-h-72 outline-none p-2 focus:border-b-2 border-gray-600 xl:text-lg 2xl:text-xl 2xl:h-28"
                         onChange={() => handleChangeEntered(description, "descriptionEntered")}/>
                     </p>
                 </div>
-                <div>
-                    <div className="text-start">
-                        <label className="uppercase">Due date</label>
-                        <p>
-                            <input 
-                            type="date"
-                            ref={date} 
-                            min={currentDate}
-                            max="31.12.9999"
-                            required 
-                            className="bg-gray-200 w-11/12 h-12 outline-none p-2 focus:border-b-2 border-gray-600"
-                            onChange={() => handleChangeEntered(date, "dateEntered")}/>
-                        </p>
-                    </div>
+                <div className="text-start 2xl:mb-2">
+                    <label className="uppercase xl:text-lg">Due date</label>
+                    <p>
+                        <input 
+                        type="date"
+                        ref={date} 
+                        min={currentDate}
+                        max="31.12.9999"
+                        required 
+                        className="bg-gray-200 w-11/12 h-12 outline-none p-2 focus:border-b-2 border-gray-600 xl:text-lg 2xl:text-xl 2xl:h-14"
+                        onChange={() => handleChangeEntered(date, "dateEntered")}/>
+                    </p>
                 </div>
             </section>
     </>
