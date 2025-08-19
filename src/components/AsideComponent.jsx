@@ -1,7 +1,17 @@
 import floppy from "../assets/124-1246578_obsolete-white-save-icon-png.png";
-export default function AsideComponent({onAdded, yourProjects, onVisiblePage, onLocal}) {
+import menu from "../assets/menuIcon.svg";
+export default function AsideComponent({onAdded, yourProjects, onVisiblePage, onLocal, showAside, setShowAside}) {
+    let initialClassesAside = "p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg min-w-72 max-w-72 absolute md:relative min-h-screen z-10 hidden md:block"
+    if(!showAside) 
+        initialClassesAside+=" hidden"
+    else
+        initialClassesAside = initialClassesAside.replace("hidden", "block");
+    const classes = initialClassesAside; 
     return (
-        <aside className="p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg min-w-72 max-w-72">
+        <aside className={classes}>
+            <button className="block md:hidden px-3 pb-2 fixed" onClick={() => setShowAside(prev => !prev)}>
+                <img src={menu} alt="menu-Icon" className="size-14" />
+            </button>
             <h1 className="pt-12 uppercase pl-6 pr-24 pb-8">Your Projects</h1>
             <p className="ml-6">
                 <button className="p-2 mb-2 rounded-lg items-center text-gray-400 bg-gray-500 bg-opacity-25 transform duration-500 hover:bg-opacity-35 hover:text-gray-200 text-sm" onClick={() => onAdded(true)}>

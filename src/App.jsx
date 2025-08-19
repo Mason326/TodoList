@@ -6,13 +6,14 @@ import CreatingProject from './components/CreatingProject';
 import PageComponent from './components/pages/PageComponent';
 import ModalComponent from "./components/notfifcations/modal/ModalComponent";
 import Message from './components/notfifcations/Message';
-
+import menu from "./assets/menuIcon.svg";
 
 function App() {
   const [addingProject, setAddingProject] = useState(false);
   const [pageVisibility, setPageVisibility] = useState(-1);
   const [createdProjects, setCreatedProjects] = useState(JSON.parse(localStorage.getItem("projects")) || []);
   const [displaySaveMessage, setDisplaySaveMessage] = useState(false);
+  const [asideDisplay, setAsideDisplay] = useState(true && window.innerWidth > 1024);
 
   const dialog = useRef();
 
@@ -51,12 +52,18 @@ function App() {
   } 
 
   return (
+    <article>
+    <button className="block md:hidden py-2 px-4 fixed" onClick={() => setAsideDisplay(prev => !prev)}>
+        <img src={menu} alt="menu-Icon" className='size-14' />
+    </button>
     <div className="App flex min-h-screen" id="app-container">
       <AsideComponent
        onAdded={handleAddProject}
        yourProjects={createdProjects}
        onVisiblePage={handleChangeVisibilty}
-       onLocal={handleAddToLocalStorage}/>
+       onLocal={handleAddToLocalStorage}
+       showAside={asideDisplay}
+       setShowAside={setAsideDisplay}/>
       {addingProject ? <CreatingProject 
        onAdded={handleAddProject} 
        onCreated={handleCreateNewProject}
@@ -66,9 +73,10 @@ function App() {
         <ModalComponent ref={dialog} 
         onDeleteProject={handleDeleteProject}
         projectTitle={createdProjects[pageVisibility].titleEntered}/>
-       }
+      }
       {displaySaveMessage && <Message text="saved" isSaving /> }
     </div>
+    </article>
   );
 }
 
