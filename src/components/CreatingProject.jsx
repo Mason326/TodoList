@@ -75,59 +75,75 @@ export default function CreatingProject({onAdded, onCreated, projectNames}) {
 
     return (
         <>
-            <section id="create-project-container" className="m-auto pb-48 w-8/12">
-                <div className="mb-24 flex justify-end w-11/12">
-                    {errMessageVisible && <Message text={invalidInputMessage.current} />}
+            <section id="create-project-container" className="m-auto pb-12 md:pb-48 w-11/12 h-screen flex flex-col md:block gap-4">
+                <article>
+                    <div className="mb-24 flex justify-end w-11/12">
+                        {errMessageVisible && <Message text={invalidInputMessage.current} />}
+                    </div>
+                    <div className="hidden md:flex justify-end w-11/12">
+                        <p>
+                            <TransparentButtonComponent clickEvent={() => onAdded(false)}>
+                                Cancel
+                            </TransparentButtonComponent>
+                        </p>
+                        <p>
+                            <ColoredButtonComponent clickEvent={() => handleSaveEntered(entered)}>
+                                Save
+                            </ColoredButtonComponent>
+                        </p>
+                    </div>
+                    <div className="text-start">
+                        <label className="uppercase">Title</label>
+                        <p>
+                            <input 
+                            ref={title}
+                            required
+                            type="text"
+                            maxLength={81}
+                            className="bg-gray-200 w-full md:w-11/12 h-10 md:h-12 outline-none p-2 focus:border-b-2 border-gray-600"
+                            onChange={() => handleChangeEntered(title, "titleEntered")}/>
+                        </p>
+                    </div>
+                    <div className="text-start">
+                        <label className="uppercase">Description</label>
+                        <p>
+                            <textarea 
+                            ref={description} 
+                            required
+                            maxLength={500}
+                            className="bg-gray-200 w-full md:w-11/12 h-20 md:h-24 min-h-24 max-h-72 outline-none p-2  focus:border-b-2 border-gray-600"
+                            onChange={() => handleChangeEntered(description, "descriptionEntered")}/>
+                        </p>
+                    </div>
+                    <div>
+                        <div className="text-start">
+                            <label className="uppercase">Due date</label>
+                            <p>
+                                <input 
+                                type="date"
+                                ref={date} 
+                                min={currentDate}
+                                max="31.12.9999"
+                                required 
+                                className="bg-gray-200 w-full md:w-11/12 h-10 md:h-12 outline-none p-2 focus:border-b-2 border-gray-600"
+                                onChange={() => handleChangeEntered(date, "dateEntered")}/>
+                            </p>
+                        </div>
+                    </div>
+                </article>
+                <div className="grow w-2">
                 </div>
-                <div className="flex justify-end w-11/12">
-                    <p>
-                        <TransparentButtonComponent clickEvent={() => onAdded(false)}>
-                            Cancel
-                        </TransparentButtonComponent>
-                    </p>
+                <div className="flex flex-col gap-2 md:hidden w-full">
                     <p>
                         <ColoredButtonComponent clickEvent={() => handleSaveEntered(entered)}>
                             Save
                         </ColoredButtonComponent>
                     </p>
-                </div>
-                <div className="text-start">
-                    <label className="uppercase">Title</label>
-                    <p>
-                        <input 
-                        ref={title}
-                        required
-                        type="text"
-                        maxLength={81}
-                        className="bg-gray-200 w-11/12 h-12 outline-none p-2 focus:border-b-2 border-gray-600"
-                        onChange={() => handleChangeEntered(title, "titleEntered")}/>
+                    <p> 
+                        <TransparentButtonComponent clickEvent={() => onAdded(false)}>
+                            Cancel
+                        </TransparentButtonComponent>
                     </p>
-                </div>
-                <div className="text-start">
-                    <label className="uppercase">Description</label>
-                    <p>
-                        <textarea 
-                        ref={description} 
-                        required
-                        maxLength={500}
-                        className="bg-gray-200 w-11/12 h-24 min-h-24 max-h-72 outline-none p-2  focus:border-b-2 border-gray-600"
-                        onChange={() => handleChangeEntered(description, "descriptionEntered")}/>
-                    </p>
-                </div>
-                <div>
-                    <div className="text-start">
-                        <label className="uppercase">Due date</label>
-                        <p>
-                            <input 
-                            type="date"
-                            ref={date} 
-                            min={currentDate}
-                            max="31.12.9999"
-                            required 
-                            className="bg-gray-200 w-11/12 h-12 outline-none p-2 focus:border-b-2 border-gray-600"
-                            onChange={() => handleChangeEntered(date, "dateEntered")}/>
-                        </p>
-                    </div>
                 </div>
             </section>
     </>

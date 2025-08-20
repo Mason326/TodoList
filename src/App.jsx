@@ -18,6 +18,8 @@ function App() {
   const dialog = useRef();
 
   function handleAddProject(changeActive) {
+    if(window.innerWidth < 1024)
+      setAsideDisplay(false);
     setAddingProject(changeActive);
     setPageVisibility(-1);
   }
