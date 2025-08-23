@@ -125,7 +125,7 @@ export default function CreatingProject({onAdded, onCreated, projectNames}) {
                                 min={currentDate}
                                 max="31.12.9999"
                                 required 
-                                className="bg-gray-200 w-full md:w-11/12 h-10 md:h-12 outline-none p-2 focus:border-b-2 border-gray-600"
+                                className="bg-gray-200 w-full md:w-1/4 h-10 md:h-12 outline-none p-2 focus:border-b-2 border-gray-600"
                                 onChange={() => handleChangeEntered(date, "dateEntered")}/>
                             </p>
                         </div>
