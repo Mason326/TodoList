@@ -1,24 +1,53 @@
-import {  useState, useRef } from "react";
+import {  useState, useRef, useContext } from "react";
 import can from "../../assets/can_16228887.png"
 import Checkbox from '@mui/material/Checkbox';
-import Message from "../notfifcations/Message";
 import TransparentButtonComponent from "../buttons/TransparentButtonComponent"; 
-import { Box } from "@mui/material";
 import SpeedDialTooltipOpen from "../speedDial/SpeedDialTooltipOpen.jsx";
 import CreateTaskDialog from '../notfifcations/createTask/CreateTaskDialog';
 import { PageContext } from "../../context/PageContext.jsx";
 import AccordionUsage from "../accordions/AccordionUsage.jsx";
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
+import CustomizedSnackbars from "../notfifcations/snackbar/CustomizedSnackbars.jsx";
+import { AppContext } from '../../context/AppContext';
 
 let currTitle;
 export default function PageComponent({neededObj, onProjectDelete}) {
+    const App = useContext(AppContext);
     const {titleEntered, dateEntered, descriptionEntered, tasks, complete} = neededObj;
     const [ enteredValue, setEnteredValue ] = useState("");
     const [ complitedCount, setComplited ] = useState(complete.completed);
-    const [ displayMessage, setDisplayMessage ] = useState(false);
     const chkRefs = useRef(complete.completedArr);
-    const invalidMessageText = useRef("Invalid input data");
     const [openDialog, setOpen] = useState(false);
     const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
+    const [snackbar, setSnackbar] = useState({
+    isShowed: false,
+    severity: "error",
+    text: "Initial text"
+  });
+  
+  const handleOpen = (severity, text) => {
+        setSnackbar({
+          isShowed: true,
+          severity,
+          text
+        });
+      };
+      
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+        return;
+    }
+
+    setSnackbar((prev) => {
+        return {
+            isShowed: false,
+            severity: prev.severity,
+            text: prev.text
+        }
+      });
+  };
     
     const unCompletedContent = tasks.length - complitedCount > 0 ? tasks.map(item => 
             <li className={chkRefs.current[tasks.indexOf(item)] ? "items-center hidden" : "flex items-center"} key={item}>
@@ -26,7 +55,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                     <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={false} color="default"/>
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
-                    <p className="flex-grow overflow-ellipsis">{item}</p>
+                    <p className="flex-grow overflow-ellipsis overflow-hidden">{item}</p>
                     <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500">Clear</button>
                 </div>
             </li>
@@ -38,7 +67,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                     <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={true} color="default"/>
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
-                    <p className="flex-grow line-through">{item}</p>
+                    <p className="flex-grow line-through overflow-ellipsis overflow-hidden">{item}</p>
                     <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500">Clear</button>
                 </div>
             </li>
@@ -61,22 +90,18 @@ export default function PageComponent({neededObj, onProjectDelete}) {
 
     function handleAddANewTask(taskName) {
         if(tasks.indexOf(taskName) === -1 && taskName) {
-            const words = taskName.split(" ");
-            for(const word of words ) {
-                if(word.length > 55)
-                {
-                    invalidMessageText.current = "Taskname has too large word!";
-                    handleShowErrorMessage();
-                    return;
-                }
+            if(taskName.length > 50)
+            {
+                handleOpen("error", "Taskname is too large!");
+                return;
             }
             tasks.push(taskName);
+            handleOpen("info", "Task has been added");
             chkRefs.current.push(false);
             setEnteredValue("");
-        }
+            }
         else {
-            invalidMessageText.current = "This taskname isn't available!";
-            handleShowErrorMessage();
+            handleOpen("error", "This taskname isn't available!")
         }
     }
 
@@ -93,13 +118,6 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             return curr});
 
         chkRefs.current[index] = event.target.checked;
-    }
-
-    function handleShowErrorMessage() {
-        setDisplayMessage(true);
-        setTimeout(() => {
-            setDisplayMessage(false)
-        }, 5000)
     }
 
     function handleChangeInputText(event) {
@@ -134,17 +152,26 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     
     return (
         <PageContext.Provider value={{createTask: handleAddANewTask, openState: openDialog, open: handleClickOpen, close: handleClose, deleteCompleted: handleDeleteAllCompleted}}>
-        <Box>
+        <CustomizedSnackbars openState={snackbar} onClose={handleCloseSnackbar} />
+        <div className="md:w-full">
         <CreateTaskDialog />
         <div className="md:hidden">
             <SpeedDialTooltipOpen />
         </div>
+        <div className="md:hidden">
+            <IconButton sx={{position: "absolute", top: 20, right: 16}} size="large" onClick={App.deleteProject}>
+               <DeleteIcon sx={{scale: 1.5}} /> 
+            </IconButton>
+            <IconButton sx={{position: "absolute", top: 20, right: 81}} size="large" onClick={App.saveState}>
+                <SaveIcon sx={{scale: 1.5}} />
+            </IconButton>
+        </div>
         <section className="pt-4 pl-10 md:p-0 min-w-96 my-16 flex-grow flex flex-wrap h-full">
-            <div className="w-11/12 md:w-9/12">
-                <h1 className="font-bold text-3xl md:text-4xl mb-4 overflow-ellipsis">{titleEntered}</h1>
+            <div className="w-11/12 md:w-10/12">
+                <h1 className="font-bold text-3xl md:text-4xl mb-4 overflow-ellipsis overflow-hidden">{titleEntered}</h1>
                 <p className="text-stone-400 text-base md:text-lg mb-4">{new Date(dateEntered).toDateString()}</p>
                 <article className="text-base md:text-lg max-width-full">
-                    <p className="overflow-ellipsis font-mono">
+                    <p className="font-mono overflow-ellipsis overflow-hidden">
                      {descriptionEntered}
                     </p>
                 </article>
@@ -153,9 +180,8 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 <button onClick={onProjectDelete} title="Delete this project" className="bg-transparent py-2 px-6 rounded-lg mb-4 transform duration-500 hover:bg-gray-100">
                     <img src={can} alt="Trash" className="w-10 h-10"/>
                 </button>
-                {displayMessage && <Message text={invalidMessageText.current}/>}
             </div>
-            <div className="md:mt-10 w-11/12 md:w-9/12 border-b-2 pb-5 min-h-[36rem]">
+            <div className="md:mt-10 w-11/12 md:w-11/12 border-b-2 pb-5 min-h-[36rem]">
                 <h2 className="font-bold text-3xl">Tasks</h2>
                 <div className="hidden md:flex justify-start my-4 items-center">
                     <textarea value={enteredValue} onChange={(event) => handleChangeInputText(event)} type="text" maxLength={250} className="bg-gray-200 h-12 outline-none p-2 focus:border-b-2 border-gray-600 min-h-12 max-h-24 w-64"/>
@@ -186,7 +212,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 </div>
             </div>
         </section>
-    </Box>
+    </div>
     </PageContext.Provider>
     );
 }

@@ -23,13 +23,13 @@ const ModalComponent = forwardRef(function ModalComponent({onDeleteProject, proj
                     <img src={close} alt="close" className="w-4 h-4 transform duration-500 hover:rotate-180 "/>
                 </button>
             </div>
-            <div className="pt-6 px-12 pb-8 w-[30rem]">
+            <div className="pt-6 px-12 pb-8 md:w-[30rem]">
                 <hr className="h-2" />
                 <h2 className="font-semibold text-2xl text-center font-mono my-2 text-gray-700">Delete this project?</h2>
-                <p className="text-center">The project '{projectTitle}' will be deleted without the possibility of return</p>
-                <img src={basket} alt="basket-photo" className="w-28 h-30 mx-auto my-2"/>
+                <p className="text-center text-lg md:text-base">The project '{projectTitle}' will be deleted without the possibility of return</p>
+                <img src={basket} alt="basket-photo" className="w-24 h-26 md:w-28 md:h-30 mx-auto my-2"/>
                 <hr className="h-2 mb-4 mt-4" />
-                <div className="flex justify-evenly items-center">
+                <div className="flex gap-5 md:justify-evenly items-center">
                     <ColoredButtonComponent clickEvent={onDeleteProject}>Yes</ColoredButtonComponent>
                     <TransparentButtonComponent>No</TransparentButtonComponent>
                 </div>

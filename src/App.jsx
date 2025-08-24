@@ -6,16 +6,42 @@ import { AppContext } from './context/AppContext';
 import CreatingProject from './components/CreatingProject';
 import PageComponent from './components/pages/PageComponent';
 import ModalComponent from "./components/notfifcations/modal/ModalComponent";
-import Message from './components/notfifcations/Message';
 import menu from "./assets/menuIcon.svg";
+import CustomizedSnackbars from './components/notfifcations/snackbar/CustomizedSnackbars';
 
 function App() {
   const [addingProject, setAddingProject] = useState(false);
   const [pageVisibility, setPageVisibility] = useState(-1);
   const [createdProjects, setCreatedProjects] = useState(JSON.parse(localStorage.getItem("projects")) || []);
-  const [displaySaveMessage, setDisplaySaveMessage] = useState(false);
   const [asideDisplay, setAsideDisplay] = useState(true && window.innerWidth > 1024);
   const dialog = useRef();
+  const [snackbar, setSnackbar] = useState({
+    isShowed: false,
+    severity: "error",
+    text: "Initial text"
+  });
+  
+  const handleOpen = (severity, text) => {
+        setSnackbar({
+          isShowed: true,
+          severity,
+          text
+        });
+      };
+      
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+        return;
+    }
+
+    setSnackbar((prev) => {
+        return {
+            isShowed: false,
+            severity: prev.severity,
+            text: prev.text
+        }
+      });
+  };
 
   function handleAddProject(changeActive) {
     if(window.innerWidth < 1024)
@@ -36,6 +62,7 @@ function App() {
       return [ {...lastEnteredValues, tasks: [...lastEnteredValues.tasks]}, ...lastData];
     });
     setAddingProject(false);
+    handleOpen("info", "Project has been created");
   }
 
   function handleShowModal() {
@@ -45,27 +72,25 @@ function App() {
   function handleDeleteProject() {
       createdProjects.splice(pageVisibility, 1);
       setPageVisibility(-1);
+      handleOpen("info", "Project has been deleted");
 }
 
   function handleAddToLocalStorage() {
     localStorage.setItem("projects", JSON.stringify(createdProjects));
-    setDisplaySaveMessage(true);
-        setTimeout(() => {
-          setDisplaySaveMessage(false)
-        }, 5000)
+    handleOpen("success", "Saved to Local Storage");
+    setAsideDisplay(false);
   } 
 
   return (
     <article>
+    <CustomizedSnackbars openState={snackbar} onClose={handleClose} />
     <button className="block md:hidden py-2 px-4 fixed" onClick={() => setAsideDisplay(prev => !prev)}>
         <img src={menu} alt="menu-Icon" className='size-14' />
     </button>
-    <AppContext.Provider value={{creatingPage: handleAddProject, saveState: handleAddToLocalStorage, deleteProject: handleShowModal}}>
+    <AppContext.Provider value={{creatingPage: handleAddProject, saveState: handleAddToLocalStorage, deleteProject: handleShowModal, visiblePage: handleChangeVisibilty, projects: createdProjects}}>
     <div className="App flex min-h-screen" id="app-container">
       <AsideComponent
        onAdded={handleAddProject}
-       yourProjects={createdProjects}
-       onVisiblePage={handleChangeVisibilty}
        onLocal={handleAddToLocalStorage}
        showAside={asideDisplay}
        setShowAside={setAsideDisplay}/>
@@ -79,7 +104,6 @@ function App() {
         onDeleteProject={handleDeleteProject}
         projectTitle={createdProjects[pageVisibility].titleEntered}/>
       }
-      {displaySaveMessage && <Message text="saved" isSaving /> }
     </div>
     </AppContext.Provider>
     </article>

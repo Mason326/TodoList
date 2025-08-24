@@ -1,13 +1,15 @@
 import floppy from "../assets/saveIcon.svg";
 import add from "../assets/addIcon.svg"
 import menu from "../assets/menuIcon.svg";
-export default function AsideComponent({onAdded, yourProjects, onVisiblePage, onLocal, showAside, setShowAside}) {
+import VirtualizedList from "./list/VirtualizedList";
+
+export default function AsideComponent({onAdded, onLocal, showAside, setShowAside}) {
     let initialClassesAside = "p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg min-w-72 max-w-72 fixed md:relative min-h-full z-10 hidden md:block"
     if(!showAside) 
         initialClassesAside+=" hidden"
     else
         initialClassesAside = initialClassesAside.replace("hidden", "block");
-    const classes = initialClassesAside; 
+    const classes = initialClassesAside;
     return (
         <aside className={classes}>
             <button className="block md:hidden px-2 pb-2 fixed" onClick={() => setShowAside(prev => !prev)}>
@@ -21,15 +23,9 @@ export default function AsideComponent({onAdded, yourProjects, onVisiblePage, on
                 </button>
             </p>
             <section className="ml-6 min-w-0 min-h-0 m-0">
-                <ul>
-                    {yourProjects.length > 0 && yourProjects.map((item) => <li key={`${item.titleEntered}_${item.dateEntered}`} className="text-gray-400 transform duration-500 hover:bg-gray-800 hover:text-gray-200 mr-4">
-                        <button className="min-w-full min-h-full text-left text-lg p-2 max-w-64" onClick={() => onVisiblePage(yourProjects.indexOf(item))}>
-                            <p className="overflow-ellipsis">{item.titleEntered}</p>
-                        </button>
-                    </li>) }
-                </ul>
+                <VirtualizedList />
             </section>
-            <button className="ml-6 px-5 py-3 md:p-2 mb-2 rounded-lg items-center text-gray-400 bg-gray-500 bg-opacity-25  transform duration-500 hover:bg-opacity-35 hover:text-gray-200 text-sm my-4" onClick={onLocal}>
+            <button className="ml-6 px-5 py-3 md:p-2 mb-2 rounded-lg items-center text-gray-400 bg-gray-500 bg-opacity-25 transform duration-500 hover:bg-opacity-35 hover:text-gray-200 text-sm my-4" onClick={onLocal}>
                 <span className="flex justify-between gap-2 items-center">
                     <img src={floppy} alt="floppy" className="ml-2 w-[2rem] h-[2rem] md:w-[1.5rem] md:h-[1.5rem]"/>
                     <p className="py-2 pr-2 text-xl md:text-base">Save changes</p>
