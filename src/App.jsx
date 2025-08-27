@@ -84,7 +84,7 @@ function App() {
   return (
     <article>
     <CustomizedSnackbars openState={snackbar} onClose={handleClose} />
-    <button className="block md:hidden py-2 px-4 fixed" onClick={() => setAsideDisplay(prev => !prev)}>
+    <button className="block lg:hidden py-2 px-4 fixed" onClick={() => setAsideDisplay(prev => !prev)}>
         <img src={menu} alt="menu-Icon" className='size-14' />
     </button>
     <AppContext.Provider value={{creatingPage: handleAddProject, saveState: handleAddToLocalStorage, deleteProject: handleShowModal, visiblePage: handleChangeVisibilty, projects: createdProjects}}>

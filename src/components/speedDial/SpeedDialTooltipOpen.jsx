@@ -18,7 +18,7 @@ export default function SpeedDialTooltipOpen() {
     { icon: <ClearAllIcon />, name: 'Delete Completed', click: () => Page.deleteCompleted() },
   ];
   return (
-    <Box sx={{ height: 330, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', bottom: 3, right: 25, zIndex: 10 }}>
+    <Box sx={{ height: 330, transform: 'translateZ(0px)', flexGrow: 1, position: 'fixed', bottom: 3, right: 35, zIndex: 10 }}>
       <SpeedDial
         ariaLabel="SpeedDial tooltip example"
         icon={<SpeedDialIcon />}

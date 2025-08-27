@@ -55,8 +55,8 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                     <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={false} color="default"/>
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
-                    <p className="flex-grow overflow-ellipsis overflow-hidden">{item}</p>
-                    <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500">Clear</button>
+                    <p className="flex-grow overflow-ellipsis overflow-hidden 2xl:text-xl">{item}</p>
+                    <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
                 </div>
             </li>
     ) : <li className="text-stone-300 h-8 text-xl list-none">* Here tasks you need to do</li>;
@@ -67,8 +67,8 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                     <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={true} color="default"/>
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
-                    <p className="flex-grow line-through overflow-ellipsis overflow-hidden">{item}</p>
-                    <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500">Clear</button>
+                    <p className="flex-grow line-through overflow-ellipsis overflow-hidden 2xl:text-xl">{item}</p>
+                    <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
                 </div>
             </li>
     ) : <li className="text-stone-300 h-8 text-xl list-none">* Here your completed tasks</li>
@@ -153,12 +153,12 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     return (
         <PageContext.Provider value={{createTask: handleAddANewTask, openState: openDialog, open: handleClickOpen, close: handleClose, deleteCompleted: handleDeleteAllCompleted}}>
         <CustomizedSnackbars openState={snackbar} onClose={handleCloseSnackbar} />
-        <div className="md:w-full">
+        <div className="md:w-10/12 lg:w-full">
         <CreateTaskDialog />
-        <div className="md:hidden">
+        <div className="lg:hidden">
             <SpeedDialTooltipOpen />
         </div>
-        <div className="md:hidden">
+        <div className="lg:hidden">
             <IconButton sx={{position: "absolute", top: 20, right: 16}} size="large" onClick={App.deleteProject}>
                <DeleteIcon sx={{scale: 1.5}} /> 
             </IconButton>
@@ -166,45 +166,45 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 <SaveIcon sx={{scale: 1.5}} />
             </IconButton>
         </div>
-        <section className="pt-4 pl-10 md:p-0 min-w-96 my-16 flex-grow flex flex-wrap h-full">
-            <div className="w-11/12 md:w-10/12">
+        <section className="pt-4 pl-10 md:pl-24 lg:p-0 min-w-96 my-16 lg:my-0 lg:py-16 flex-grow flex flex-wrap h-full">
+            <div className="w-11/12 md:w-9/12 lg:w-10/12">
                 <h1 className="font-bold text-3xl md:text-4xl mb-4 overflow-ellipsis overflow-hidden">{titleEntered}</h1>
-                <p className="text-stone-400 text-base md:text-lg mb-4">{new Date(dateEntered).toDateString()}</p>
+                <p className="text-stone-400 text-base md:text-lg 2xl:text-xl mb-4">{new Date(dateEntered).toDateString()}</p>
                 <article className="text-base md:text-lg max-width-full">
-                    <p className="font-mono overflow-ellipsis overflow-hidden">
+                    <p className="font-mono overflow-ellipsis overflow-hidden 2xl:text-xl">
                      {descriptionEntered}
                     </p>
                 </article>
             </div>
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
                 <button onClick={onProjectDelete} title="Delete this project" className="bg-transparent py-2 px-6 rounded-lg mb-4 transform duration-500 hover:bg-gray-100">
                     <img src={can} alt="Trash" className="w-10 h-10"/>
                 </button>
             </div>
-            <div className="md:mt-10 w-11/12 md:w-11/12 border-b-2 pb-5 min-h-[36rem]">
+            <div className="md:mt-10 w-11/12 lg:w-11/12 border-b-2 pb-5 min-h-[36rem]">
                 <h2 className="font-bold text-3xl">Tasks</h2>
-                <div className="hidden md:flex justify-start my-4 items-center">
-                    <textarea value={enteredValue} onChange={(event) => handleChangeInputText(event)} type="text" maxLength={250} className="bg-gray-200 h-12 outline-none p-2 focus:border-b-2 border-gray-600 min-h-12 max-h-24 w-64"/>
-                    <button onClick={() => handleAddANewTask(enteredValue)} className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100">Add Task</button>
+                <div className="hidden lg:flex justify-start my-4 items-center">
+                    <textarea value={enteredValue} onChange={(event) => handleChangeInputText(event)} type="text" maxLength={250} className="bg-gray-200 h-12 outline-none p-2 focus:border-b-2 border-gray-600 min-h-12 max-h-24 w-64 2xl:w-72 2xl:min-h-16 2xl:max-h-30 2xl:text-2xl"/>
+                    <button onClick={() => handleAddANewTask(enteredValue)} className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100 2xl:text-xl">Add Task</button>
                 </div>
                 <div className="md:flex justify-between">
-                    {chkRefs.current.length === complitedCount && chkRefs.current.length !== 0 ? <h2 className="my-4">All tasks are completed!</h2> : <h2 className="my-4">Completed Tasks: {complitedCount}</h2>}
-                    <div className="hidden md:block">
+                    {chkRefs.current.length === complitedCount && chkRefs.current.length !== 0 ? <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2> : <h2 className="my-4 2xl:text-xl">Completed Tasks: {complitedCount}</h2>}
+                    <div className="hidden lg:block">
                         <TransparentButtonComponent clickEvent={handleDeleteAllCompleted}>Delete completed</TransparentButtonComponent>
                     </div>
                 </div>
-                <div className="md:hidden mt-8">
+                <div className="lg:hidden mt-8">
                     <AccordionUsage uncomplete={unCompletedContent} complete={completedContent} />
                 </div>
-                <div className="hidden md:flex gap-5">
+                <div className="hidden lg:flex gap-5">
                     <div className="w-full">
-                        <h2 className="text-xl font-semibold">Uncomplited</h2>
+                        <h2 className="text-xl font-semibold 2xl:text-2xl">Uncomplited</h2>
                         <ul className="rounded-md min-h-full">
                             {unCompletedContent}
                         </ul>
                     </div>
                     <div className="w-full">
-                        <h2 className="text-xl font-semibold">Complited</h2>
+                        <h2 className="text-xl font-semibold 2xl:text-2xl">Complited</h2>
                         <ul className="rounded-md">
                             {completedContent}
                         </ul>
