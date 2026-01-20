@@ -13,7 +13,7 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
-//import ForgotPassword from '../../components';
+import ForgotPassword from '../../components/sign-in/components/ForgotPassword.jsx';
 import AppTheme from '../../shared-theme/AppTheme';
 import { signInWithEmailAndPassword } from '../../api/user.js';
 import ColorModeSelect from '../../shared-theme/ColorModeSelect.jsx';
@@ -228,7 +228,7 @@ export default function SignIn(props) {
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
-            {/* <ForgotPassword open={open} handleClose={handleClose} snackBarVisibility={setDisplaySnack} /> */ <div>Forgot password</div>}
+            <ForgotPassword open={open} handleClose={handleClose} snackBarVisibility={setDisplaySnack} />
             <Button
               type="submit"
               fullWidth

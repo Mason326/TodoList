@@ -6,7 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import { sendResetRequest } from '../../api/user';
+import { sendResetRequest } from '../../../api/user';
 import TextField from '@mui/material/TextField';
 import { useRef} from "react";
 
