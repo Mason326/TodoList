@@ -114,24 +114,46 @@ export default function SignUp(props) {
     };
   };
 
+  const handleClose = (event, reason) => {
+  if (reason === 'clickaway') {
+    return;
+  }
+
+  setDisplaySnack((prev) => {
+      return {
+      ...prev,
+      isShowed: false
+    }
+  });
+};
+
   async function handleSignUpWithEmail(email, password, uname) {
     try {
       const successSignUp = await signUpWithEmailAndPassword(email, password, uname);
+      
       setDisplaySnack(() => {
-        return {
-          isShowed: true,
-          text: "Successfull sign up",
-          severity: "success"
+        if(successSignUp?.user) {
+          return {
+            isShowed: true,
+            text: "Successfull sign up",
+            severity: "success"
+          }
+        } else {
+          return {
+            isShowed: true,
+            text: "Failed to sign up a user",
+            severity: "error"
+          }
         }
+        
       });
-      onChangeAuth(successSignUp);
     }
     catch(e) {
       setDisplaySnack(() => {
         return {
           isShowed: true,
-          text: "Please verify your account by email or try again to sign up",
-          severity: "info"
+          text: `${e.message}`,
+          severity: "error"
         }
       });
     }
@@ -139,7 +161,7 @@ export default function SignUp(props) {
 
   return (
     <>
-    <CustomizedSnackbars openState={displaySnack} setOpen={setDisplaySnack} />
+    <CustomizedSnackbars openState={displaySnack} setOpen={setDisplaySnack} onClose={handleClose} />
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <ColorModeSelect sx={{ position: 'fixed', top: '8rem', right: '1rem' }} />

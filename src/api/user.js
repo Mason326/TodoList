@@ -1,9 +1,5 @@
 import {supabase} from "../supabase";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-export const LOCAL_STORAGE_USER_KEY = `sb-${SUPABASE_URL.split('://')[1].split(":")[0]}-auth-token`;
-console.log(supabase)
-
 export async function signUpWithEmailAndPassword(promptEmail, promptPassword, uname) {
     try
     {
@@ -18,7 +14,6 @@ export async function signUpWithEmailAndPassword(promptEmail, promptPassword, un
         })
         
         if(error) throw error;
-        console.log(error.message)
 
         return data;
     }
