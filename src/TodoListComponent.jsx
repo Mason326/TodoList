@@ -1,14 +1,17 @@
 import MainDisplay from './components/pages/MainDisplay';
 import AsideComponent from './components/AsideComponent';
-import { useState, useRef } from "react";
+import { useState, useRef, useContext } from "react";
 import { AppContext } from './context/AppContext';
 import CreatingProject from './components/CreatingProject';
 import PageComponent from './components/pages/PageComponent';
 import ModalComponent from "./components/notfifcations/modal/ModalComponent";
 import menu from "./assets/menuIcon.svg";
+import { AuthContext } from './App';
 import CustomizedSnackbars from './components/notfifcations/snackbar/CustomizedSnackbars';
 
 function TodoList() {
+  const {user} = useContext(AuthContext);
+  console.log(user);
   const [addingProject, setAddingProject] = useState(false);
   const [pageVisibility, setPageVisibility] = useState(-1);
   const [createdProjects, setCreatedProjects] = useState(JSON.parse(localStorage.getItem("projects")) || []);
@@ -80,7 +83,7 @@ function TodoList() {
     setAsideDisplay(false);
   } 
 
-  return (
+  return (user &&
     <article>
     <CustomizedSnackbars openState={snackbar} onClose={handleClose} />
     <button className="block lg:hidden py-2 px-4 fixed" onClick={() => setAsideDisplay(prev => !prev)}>

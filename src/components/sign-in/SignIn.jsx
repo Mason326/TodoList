@@ -66,39 +66,30 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignIn(props) {
-  const { onChangeAuth } = props;
+  //const { onChangeAuth } = props;
   const navigate = useNavigate();
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [open, setOpen] = React.useState(false);
   const [displaySnack, setDisplaySnack] = React.useState({
     isShowed: false,
     severity: null,
     text: null
   });
-  handleFetchAdmins();
 
-  async function handleFetchAdmins() {
-    try {
-      const data = await fetchAdmins();
-      if(!(data && data?.length > 0)) {
-        const created_data = await createUser("admin", "admin@fakemail.com", "Admin_12345", true);
-      }
-    }
-    catch(e) {
-        console.log("");
-    }
+  const handleClose = (event, reason) => {
+  if (reason === 'clickaway') {
+    return;
   }
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
+  setDisplaySnack((prev) => {
+      return {
+      ...prev,
+      isShowed: false
+    }
+  });
+};
 
   const handleSubmit = (event) => {
     if (emailError || passwordError) {
@@ -147,16 +138,16 @@ export default function SignIn(props) {
             severity: "success"
           }
         });
-        onChangeAuth(successSignIn);
+       // onChangeAuth(successSignIn);
         setTimeout(() => {
-          navigate("/",  {replace: false})
+          navigate("/dashboard",  {replace: false})
         }, 3000);
       }
       catch(e) {
         setDisplaySnack(() => {
           return {
             isShowed: true,
-            text: "Incorrect user data",
+            text: `${e.message}`,
             severity: "error"
           }
         });
@@ -165,7 +156,7 @@ export default function SignIn(props) {
 
   return (
     <>
-    <CustomizedSnackbars openState={displaySnack} setOpen={setDisplaySnack} />
+    <CustomizedSnackbars openState={displaySnack} setOpen={setDisplaySnack} onClose={handleClose} />
     <AppTheme {...props}>
       <CssBaseline enableColorScheme />
       <SignInContainer direction="column" justifyContent="space-between">
@@ -228,7 +219,7 @@ export default function SignIn(props) {
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
-            <ForgotPassword open={open} handleClose={handleClose} snackBarVisibility={setDisplaySnack} />
+            {/* <ForgotPassword open={open} handleClose={handleClose} snackBarVisibility={setDisplaySnack} /> */}
             <Button
               type="submit"
               fullWidth
@@ -237,7 +228,7 @@ export default function SignIn(props) {
             >
               Sign in
             </Button>
-            <Link
+            {/* <Link
               component="button"
               type="button"
               onClick={handleClickOpen}
@@ -245,7 +236,7 @@ export default function SignIn(props) {
               sx={{ alignSelf: 'center' }}
             >
               Forgot your password?
-            </Link>
+            </Link> */}
           </Box>
           <Divider />
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

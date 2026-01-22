@@ -176,8 +176,6 @@ export default function SignUp(props) {
             Sign up
           </Typography>
           <Box
-            // component="form"
-            // onSubmit={handleSubmit}
             sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
           >
             <FormControl>
