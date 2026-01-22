@@ -1,45 +1,26 @@
-//import {supabase} from "../supabase";
-
-//const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-//export const LOCAL_STORAGE_USER_KEY = `sb-${SUPABASE_URL.split('://')[1].split(":")[0]}-auth-token`;
+import {supabase} from "../supabase";
 
 export async function signUpWithEmailAndPassword(promptEmail, promptPassword, uname) {
-    // try
-    // {
-    //     const { data, error } = await supabase.auth.signUp({
-    //         email: promptEmail,
-    //         password: promptPassword,
-    //         options: {
-    //             data: {
-    //               user_name: uname
-    //             }
-    //         }
-    //     })
+    try
+    {
+        let { data, error } = await supabase.auth.signUp({
+            email: promptEmail,
+            password: promptPassword,
+            options: {
+                data: {
+                  user_name: uname
+                }
+            }
+        })
         
-    //     if(error) throw error;
+        if(error) throw error;
 
-    //     return data;
-    // }
-    // catch(e) {
-    //     throw e;
-    // } 
-}
-
-export async function isAdmin(check_uid) {
-    try {
-        const { data, error } = await supabase
-        .from('admins')
-        .select()
-        .eq('user_id', `${check_uid}`);
-        if(data.length !== 0)
-            return true;            
-        return false
+        return data;
     }
     catch(e) {
-        return false;
+        throw e;
     }
 }
-
 
 export async function signInWithEmailAndPassword(promptEmail, promptPassword) {
     try {
@@ -48,23 +29,13 @@ export async function signInWithEmailAndPassword(promptEmail, promptPassword) {
             password: promptPassword,
           })
           if(error) throw error;
-
-          if(await isAdmin(data.user.id)) {
-            const obj = JSON.parse(localStorage.getItem(LOCAL_STORAGE_USER_KEY));
-            obj.user.user_metadata.isAdmin = true;
-            localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(obj));
-            data.user.user_metadata.isAdmin = true;
-            return data;
-        }
+        
         return data;
     }
     catch(e) {
         throw e;
     }  
 }
-
-
-
 
 export async function signOutMethod() {
     try {
@@ -75,8 +46,6 @@ export async function signOutMethod() {
         throw e;
     }  
 }
-
-
 
 export async function sendResetRequest(email) {
     try {

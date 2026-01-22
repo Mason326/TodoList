@@ -1,17 +1,20 @@
 import MainDisplay from './components/pages/MainDisplay';
 import AsideComponent from './components/AsideComponent';
-import { useState, useRef } from "react";
+import { useState, useRef, useContext } from "react";
 import { AppContext } from './context/AppContext';
 import CreatingProject from './components/CreatingProject';
 import PageComponent from './components/pages/PageComponent';
 import ModalComponent from "./components/notfifcations/modal/ModalComponent";
 import menu from "./assets/menuIcon.svg";
+import { signOutMethod } from './api/user';
+import { AuthContext } from './App';
 import CustomizedSnackbars from './components/notfifcations/snackbar/CustomizedSnackbars';
 
 function TodoList() {
+  const {user, checkSession} = useContext(AuthContext);
   const [addingProject, setAddingProject] = useState(false);
   const [pageVisibility, setPageVisibility] = useState(-1);
-  const [createdProjects, setCreatedProjects] = useState(JSON.parse(localStorage.getItem("projects")) || []);
+  const [createdProjects, setCreatedProjects] = useState([]);
   const [asideDisplay, setAsideDisplay] = useState(true && window.innerWidth > 1024);
   const dialog = useRef();
   const [snackbar, setSnackbar] = useState({
@@ -35,9 +38,8 @@ function TodoList() {
 
     setSnackbar((prev) => {
         return {
-            isShowed: false,
-            severity: prev.severity,
-            text: prev.text
+            ...prev,
+            isShowed: false
         }
       });
   };
@@ -72,25 +74,36 @@ function TodoList() {
       createdProjects.splice(pageVisibility, 1);
       setPageVisibility(-1);
       handleOpen("info", "Project has been deleted");
-}
+  }
 
-  function handleAddToLocalStorage() {
-    localStorage.setItem("projects", JSON.stringify(createdProjects));
-    handleOpen("success", "Saved to Local Storage");
-    setAsideDisplay(false);
-  } 
+  async function handleLogOut() {
+    try { 
+    await signOutMethod();
+    checkSession()
+    setSnackbar(() => {
+      return {
+        isShowed: true,
+        text: `Logged out`,
+        severity: "info"
+      }
+    });
+  }
+  catch(e) {
+    console.log(e)
+  }
+  }
 
-  return (
+  return (user &&
     <article>
     <CustomizedSnackbars openState={snackbar} onClose={handleClose} />
     <button className="block lg:hidden py-2 px-4 fixed" onClick={() => setAsideDisplay(prev => !prev)}>
         <img src={menu} alt="menu-Icon" className='size-14' />
     </button>
-    <AppContext.Provider value={{creatingPage: handleAddProject, saveState: handleAddToLocalStorage, deleteProject: handleShowModal, visiblePage: handleChangeVisibilty, projects: createdProjects}}>
+    <AppContext.Provider value={{creatingPage: handleAddProject, deleteProject: handleShowModal, visiblePage: handleChangeVisibilty, projects: createdProjects}}>
     <div className="App flex min-h-screen" id="app-container">
       <AsideComponent
        onAdded={handleAddProject}
-       onLocal={handleAddToLocalStorage}
+       onLogout={handleLogOut}
        showAside={asideDisplay}
        setShowAside={setAsideDisplay}/>
       {addingProject ? <CreatingProject 
