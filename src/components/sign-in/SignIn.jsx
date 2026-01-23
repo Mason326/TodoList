@@ -253,6 +253,15 @@ export default function SignIn(props) {
             </Typography>
           </Box>
         </Card>
+        <Box sx={{ display: 'flex', flexDirection: 'column'}}>
+            <Button
+            onClick={() => navigate("/", {replace: true})}
+            variant="body2"
+            sx={{ alignSelf: 'center', textDecoration: "underline", textAlign: "center" }}
+            >
+              Back To Home Page
+            </Button>
+        </Box>
       </SignInContainer>
     </AppTheme>
     </>
