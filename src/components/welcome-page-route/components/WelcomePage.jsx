@@ -4,9 +4,12 @@ import createProjectImage from "../../../assets/createProjectDemo.jpg"
 import addTaskImage from "../../../assets/addTaskDemo.jpg"
 import { Box, Stack, Typography, Button } from "@mui/material";
 import AppTheme from "../../../shared-theme/AppTheme";
+import { AuthContext } from "../../../App";
 
 export default function WelcomePage() {
+    const {user} = useContext(AuthContext)
     const navigate = useNavigate()
+    
   return (
     <AppTheme>
         <Box sx={{ 
@@ -38,7 +41,7 @@ export default function WelcomePage() {
             <Button 
                 variant="contained"
                 size="large"
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate(user ? '/dashboard' : '/signIn')}
                 >
                 Getting Started
             </Button>
