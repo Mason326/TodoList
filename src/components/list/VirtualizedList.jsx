@@ -14,7 +14,7 @@ function renderRow(props) {
   return (
     <ListItem style={style} key={index} component="div" disablePadding>
       <ListItemButton onClick={() => App.visiblePage(App.projects.indexOf(project))}>
-        <ListItemText primary={project.titleEntered} />
+        <ListItemText primary={project.project_name} />
       </ListItemButton>
     </ListItem>
   );

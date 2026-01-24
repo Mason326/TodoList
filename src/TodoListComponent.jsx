@@ -1,6 +1,6 @@
 import MainDisplay from './components/pages/MainDisplay';
 import AsideComponent from './components/AsideComponent';
-import { useState, useRef, useContext } from "react";
+import { useState, useRef, useContext, useEffect } from "react";
 import { AppContext } from './context/AppContext';
 import CreatingProject from './components/CreatingProject';
 import PageComponent from './components/pages/PageComponent';
@@ -9,6 +9,7 @@ import menu from "./assets/menuIcon.svg";
 import { signOutMethod } from './api/user';
 import { AuthContext } from './App';
 import CustomizedSnackbars from './components/notfifcations/snackbar/CustomizedSnackbars';
+import fetchData from './api/db';
 
 function TodoList() {
   const {user, checkSession} = useContext(AuthContext);
@@ -22,6 +23,12 @@ function TodoList() {
     severity: "error",
     text: "Initial text"
   });
+
+  useEffect(() => {
+    fetchData().then(data => 
+      setCreatedProjects(data)
+    )
+  }, [])
   
   const handleOpen = (severity, text) => {
         setSnackbar({

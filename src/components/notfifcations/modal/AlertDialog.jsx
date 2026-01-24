@@ -8,10 +8,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 export default function AlertDialog(props) {
     const {openDial, onClose, onSubmit} = props;
-
-    console.log(openDial)
-    console.log(onClose)
-    console.log(onSubmit)
     
     const handleSubmit = () => {
         onSubmit()

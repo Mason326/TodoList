@@ -1,12 +1,12 @@
-// import {supabase} from "../supabase";
+import {supabase} from "../supabase";
 
 
 export default async function fetchData() {
-    try {
-        const { data, error } = await supabase
-        .from('products')
-        .select()
-        return data;
+    try { 
+        let { data: projects, error } = await supabase
+        .from('projects')
+        .select('*')
+        return projects
     }
     catch(e) {
         throw e;
