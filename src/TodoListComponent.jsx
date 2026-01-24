@@ -58,11 +58,11 @@ function TodoList() {
     setPageVisibility(-1);
   }
 
-  function handleChangeVisibilty(index) {
+  function handleChangeVisibilty(idProject) {
     setAddingProject(false);
     if(window.innerWidth < 1024)
       setAsideDisplay(false);
-    setPageVisibility(index);
+    setPageVisibility(idProject);
   }
 
   function handleCreateNewProject(lastEnteredValues) {
@@ -116,12 +116,12 @@ function TodoList() {
       {addingProject ? <CreatingProject 
        onAdded={handleAddProject} 
        onCreated={handleCreateNewProject}
-       projectNames={createdProjects.map(elem => elem.titleEntered)}/> :
-       pageVisibility !== -1 ? <PageComponent neededObj={createdProjects[pageVisibility]} onProjectDelete={handleShowModal}/>: <MainDisplay onAdded={handleAddProject}/>}
+       projectNames={createdProjects.map(elem => elem.project_name)}/> :
+       pageVisibility !== -1 ? <PageComponent neededObj={createdProjects.findLast(elem => elem.project_id == pageVisibility)} onProjectDelete={handleShowModal}/>: <MainDisplay onAdded={handleAddProject}/>}
        {pageVisibility !== -1 && 
         <ModalComponent ref={dialog} 
         onDeleteProject={handleDeleteProject}
-        projectTitle={createdProjects[pageVisibility].titleEntered}/>
+        projectTitle={createdProjects.findLast(elem => elem.project_id == pageVisibility).project_name}/>
       }
     </div>
     </AppContext.Provider>

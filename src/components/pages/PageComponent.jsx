@@ -1,4 +1,4 @@
-import {  useState, useRef, useContext } from "react";
+import {  useState, useRef, useContext, useEffect } from "react";
 import can from "../../assets/can_16228887.png"
 import Checkbox from '@mui/material/Checkbox';
 import TransparentButtonComponent from "../buttons/TransparentButtonComponent"; 
@@ -11,22 +11,32 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CustomizedSnackbars from "../notfifcations/snackbar/CustomizedSnackbars.jsx";
 import { AppContext } from '../../context/AppContext';
+import { fetchTasks } from "../../api/db.js";
 
 let currTitle;
 export default function PageComponent({neededObj, onProjectDelete}) {
     const App = useContext(AppContext);
-    const {titleEntered, dateEntered, descriptionEntered, tasks, complete} = neededObj;
+    const {project_id, project_name, project_due_date, project_description } = neededObj;
     const [ enteredValue, setEnteredValue ] = useState("");
-    const [ complitedCount, setComplited ] = useState(complete.completed);
-    const chkRefs = useRef(complete.completedArr);
+    // const [ complitedCount, setComplited ] = useState(complete.completed);
+    const [ complitedCount, setComplited ] = useState(0);
     const [openDialog, setOpen] = useState(false);
+    const [tasks, setTasks] = useState([]);
     const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
     const [snackbar, setSnackbar] = useState({
-    isShowed: false,
-    severity: "error",
-    text: "Initial text"
-  });
-  
+        isShowed: false,
+        severity: "error",
+        text: "Initial text"
+    });
+
+    useEffect(() => {   
+        fetchTasks(project_id).then(data => {
+            setTasks(data)
+            setComplited(data.filter(tasks => tasks.is_completed).length)
+        })
+        console.log(tasks)
+    }, [complitedCount, project_id])
+    
   const handleOpen = (severity, text) => {
         setSnackbar({
           isShowed: true,
@@ -49,25 +59,25 @@ export default function PageComponent({neededObj, onProjectDelete}) {
       });
   };
     
-    const unCompletedContent = tasks.length - complitedCount > 0 ? tasks.map(item => 
-            <li className={chkRefs.current[tasks.indexOf(item)] ? "items-center hidden" : "flex items-center"} key={item}>
+    const unCompletedContent = tasks.length - complitedCount > 0 ? tasks.filter(item => !item.is_completed).map(item => 
+            <li className="flex items-center" key={item.task_id}>
                 <div className="mr-2">
                     <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={false} color="default"/>
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
-                    <p className="flex-grow overflow-ellipsis overflow-hidden 2xl:text-xl">{item}</p>
+                    <p className="flex-grow overflow-ellipsis overflow-hidden 2xl:text-xl">{item.task_name}</p>
                     <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
                 </div>
             </li>
     ) : <li className="text-stone-300 h-8 text-xl list-none">* Here tasks you need to do</li>;
 
-    const completedContent = complitedCount > 0 ? tasks.map(item => 
-            <li className={!chkRefs.current[tasks.indexOf(item)] ? "items-center hidden" : "flex items-center"} key={item}>
+    const completedContent = complitedCount > 0 ? tasks.filter(item => item.is_completed).map(item => 
+            <li className="flex items-center" key={item.task_id}>
                 <div className="mr-2">
                     <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={true} color="default"/>
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
-                    <p className="flex-grow line-through overflow-ellipsis overflow-hidden 2xl:text-xl">{item}</p>
+                    <p className="flex-grow line-through overflow-ellipsis overflow-hidden 2xl:text-xl">{item.task_name}</p>
                     <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
                 </div>
             </li>
@@ -81,10 +91,8 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     setOpen(false);
     };
     
-    if(currTitle !== titleEntered) {
-        currTitle = titleEntered;
-        setComplited(complete.completed);
-        chkRefs.current = complete.completedArr;
+    if(currTitle !== project_name) {
+        currTitle = project_name;
         setEnteredValue("");
     }
 
@@ -97,7 +105,6 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             }
             tasks.push(taskName);
             handleOpen("info", "Task has been added");
-            chkRefs.current.push(false);
             setEnteredValue("");
             }
         else {
@@ -107,17 +114,17 @@ export default function PageComponent({neededObj, onProjectDelete}) {
 
 
     function handleChangeCheckboxValue(event, index) {
-        setComplited(prev =>{
-            if(event.target.checked) {
-                const curr = ++prev;
-                complete.completed = curr;
-                return curr;
-            }
-            const curr = --prev;
-            complete.completed = curr;
-            return curr});
+        // setComplited(prev =>{
+        //     if(event.target.checked) {
+        //         const curr = ++prev;
+        //         complete.completed = curr;
+        //         return curr;
+        //     }
+        //     const curr = --prev;
+        //     complete.completed = curr;
+        //     return curr});
 
-        chkRefs.current[index] = event.target.checked;
+        // chkRefs.current[index] = event.target.checked;
     }
 
     function handleChangeInputText(event) {
@@ -125,29 +132,29 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     }
 
     function handleDeleteAllCompleted() {
-        let arr = chkRefs.current;
-        let cntr = 0;
-        while(arr.filter(elem => elem).length > 0) {
-            if(arr[cntr])
-                arr = handleDeleteTask(cntr);
-            else
-                ++cntr;
-        }
+        // let arr = chkRefs.current;
+        // let cntr = 0;
+        // while(arr.filter(elem => elem).length > 0) {
+        //     if(arr[cntr])
+        //         arr = handleDeleteTask(cntr);
+        //     else
+        //         ++cntr;
+        // }
     }
 
     function handleDeleteTask(index) {
-        tasks.splice(index, 1);
-        const currentCheck = chkRefs.current[index];
-        setComplited(prev => { 
-            if(currentCheck) {
-                const curr = --prev;
-                complete.completed = curr;
-                return curr;
-            }
-            return setComplited(prev) }
-        );
-        chkRefs.current.splice(index, 1);
-        return chkRefs.current;
+        // tasks.splice(index, 1);
+        // const currentCheck = chkRefs.current[index];
+        // setComplited(prev => { 
+        //     if(currentCheck) {
+        //         const curr = --prev;
+        //         complete.completed = curr;
+        //         return curr;
+        //     }
+        //     return setComplited(prev) }
+        // );
+        // chkRefs.current.splice(index, 1);
+        // return chkRefs.current;
     }
     
     return (
@@ -168,11 +175,11 @@ export default function PageComponent({neededObj, onProjectDelete}) {
         </div>
         <section className="pt-4 pl-10 md:pl-24 lg:p-0 min-w-96 my-16 lg:my-0 lg:py-16 flex-grow flex flex-wrap h-full">
             <div className="w-11/12 md:w-9/12 lg:w-10/12">
-                <h1 className="font-bold text-3xl md:text-4xl mb-4 overflow-ellipsis overflow-hidden">{titleEntered}</h1>
-                <p className="text-stone-400 text-base md:text-lg 2xl:text-xl mb-4">{new Date(dateEntered).toDateString()}</p>
+                <h1 className="font-bold text-3xl md:text-4xl mb-4 overflow-ellipsis overflow-hidden">{project_name}</h1>
+                <p className="text-stone-400 text-base md:text-lg 2xl:text-xl mb-4">{new Date(project_due_date).toDateString()}</p>
                 <article className="text-base md:text-lg max-width-full">
                     <p className="font-mono overflow-ellipsis overflow-hidden 2xl:text-xl">
-                     {descriptionEntered}
+                     {project_description}
                     </p>
                 </article>
             </div>
@@ -188,7 +195,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                     <button onClick={() => handleAddANewTask(enteredValue)} className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100 2xl:text-xl">Add Task</button>
                 </div>
                 <div className="md:flex justify-between">
-                    {chkRefs.current.length === complitedCount && chkRefs.current.length !== 0 ? <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2> : <h2 className="my-4 2xl:text-xl">Completed Tasks: {complitedCount}</h2>}
+                    {tasks.length === complitedCount ? <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2> : <h2 className="my-4 2xl:text-xl">Completed Tasks: {complitedCount}</h2>}
                     <div className="hidden lg:block">
                         <TransparentButtonComponent clickEvent={handleDeleteAllCompleted}>Delete completed</TransparentButtonComponent>
                     </div>
