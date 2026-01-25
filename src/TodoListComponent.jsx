@@ -9,7 +9,7 @@ import menu from "./assets/menuIcon.svg";
 import { signOutMethod } from './api/user';
 import { AuthContext } from './App';
 import CustomizedSnackbars from './components/notfifcations/snackbar/CustomizedSnackbars';
-import fetchData from './api/db';
+import fetchData, { createProject } from './api/db';
 
 function TodoList() {
   const {user, checkSession} = useContext(AuthContext);
@@ -65,10 +65,11 @@ function TodoList() {
     setPageVisibility(idProject);
   }
 
-  function handleCreateNewProject(lastEnteredValues) {
-    setCreatedProjects((lastData) => {
-      return [ {...lastEnteredValues, tasks: [...lastEnteredValues.tasks]}, ...lastData];
-    });
+  function handleCreateNewProject(projectName, projectDueDate, projectDescription) {
+    createProject(projectName, projectDueDate, projectDescription, user.id)
+      .then(data => 
+        setCreatedProjects(prev => [...prev, data])
+      )
     setAddingProject(false);
     handleOpen("info", "Project has been created");
   }

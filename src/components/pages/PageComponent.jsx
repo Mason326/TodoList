@@ -11,11 +11,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CustomizedSnackbars from "../notfifcations/snackbar/CustomizedSnackbars.jsx";
 import { AppContext } from '../../context/AppContext';
-import { fetchTasks } from "../../api/db.js";
+import { createTask, fetchTasks } from "../../api/db.js";
+import { AuthContext } from "../../App.jsx";
 
 let currTitle;
 export default function PageComponent({neededObj, onProjectDelete}) {
     const App = useContext(AppContext);
+    const {user} = useContext(AuthContext)
     const {project_id, project_name, project_due_date, project_description } = neededObj;
     const [ enteredValue, setEnteredValue ] = useState("");
     // const [ complitedCount, setComplited ] = useState(complete.completed);
@@ -97,13 +99,15 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     }
 
     function handleAddANewTask(taskName) {
-        if(tasks.indexOf(taskName) === -1 && taskName) {
+        if(taskName) {
             if(taskName.length > 50)
             {
                 handleOpen("error", "Taskname is too large!");
                 return;
             }
-            tasks.push(taskName);
+            createTask(taskName, project_id, user.id).then((data) =>
+                setTasks(prev => [...prev, data])
+            )
             handleOpen("info", "Task has been added");
             setEnteredValue("");
             }
@@ -195,7 +199,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                     <button onClick={() => handleAddANewTask(enteredValue)} className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100 2xl:text-xl">Add Task</button>
                 </div>
                 <div className="md:flex justify-between">
-                    {tasks.length === complitedCount ? <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2> : <h2 className="my-4 2xl:text-xl">Completed Tasks: {complitedCount}</h2>}
+                    {tasks.length === complitedCount && tasks.length != 0 ? <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2> : <h2 className="my-4 2xl:text-xl">Completed Tasks: {complitedCount}</h2>}
                     <div className="hidden lg:block">
                         <TransparentButtonComponent clickEvent={handleDeleteAllCompleted}>Delete completed</TransparentButtonComponent>
                     </div>

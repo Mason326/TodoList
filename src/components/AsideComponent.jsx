@@ -50,12 +50,6 @@ export default function AsideComponent({onAdded, onLogout, showAside, setShowAsi
             <section className="ml-6 min-w-0 min-h-0 m-0">
                 <VirtualizedList />
             </section>
-            {/* <button className="ml-6 px-5 py-3 md:p-2 mb-2 rounded-lg items-center text-gray-400 bg-gray-500 bg-opacity-25 transform duration-500 hover:bg-opacity-35 hover:text-gray-200 text-sm my-4" onClick={onLocal}>
-                <span className="flex justify-between gap-2 items-center">
-                <img src={floppy} alt="floppy" className="ml-2 w-[2rem] h-[2rem] md:w-[1.5rem] md:h-[1.5rem] 2xl:w-[2.3rem] 2xl:h-[2.3rem]"/>
-                <p className="py-2 pr-2 2xl:py-4 2xl:pr-8 text-xl md:text-base lg:text-xl">Save changes</p>
-                </span>
-                </button> */}
             <button className="ml-6 px-5 py-3 md:p-2 mb-2 rounded-lg items-center text-gray-400 bg-transparent transform duration-500 hover:bg-opacity-35 hover:text-gray-200 text-sm my-4 fixed" onClick={() => handleClickOpen()}>
                 <span className="flex justify-between gap-2 items-center">
                     <img src={logout} alt="logout" className="ml-2 w-[2rem] h-[2rem] md:w-[1.5rem] md:h-[1.5rem] 2xl:w-[2.3rem] 2xl:h-[2.3rem]"/>
