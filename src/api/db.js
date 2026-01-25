@@ -34,6 +34,8 @@ export async function createProject(projectName, projectDueDate, projectDescript
             { project_name: `${projectName}`, project_created_at: `${new Date().toISOString().split('T')[0]}`, project_due_date: `${projectDueDate}`, project_description: `${projectDescription}`, user_id: `${user_id}`},
         ])
         .select()
+        .single()
+        return data
     }
     catch(e) {
         throw e;
@@ -48,6 +50,8 @@ export async function createTask(taskName, projectName, user_id) {
             { task_name: `${taskName}`, task_created_at: `${new Date().toISOString().split('T')[0]}`, project_id: `${projectName}`, user_id: `${user_id}`  },
          ])
          .select()
+         .single()
+         return data
     }
     catch(e) {
         throw e;

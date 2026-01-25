@@ -105,7 +105,9 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 handleOpen("error", "Taskname is too large!");
                 return;
             }
-            createTask(taskName, project_id, user.id)
+            createTask(taskName, project_id, user.id).then((data) =>
+                setTasks(prev => [...prev, data])
+            )
             handleOpen("info", "Task has been added");
             setEnteredValue("");
             }
