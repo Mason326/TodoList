@@ -1,9 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useContext } from "react";
 import ColoredButtonComponent from "./buttons/ColoredButtonComponent";
 import TransparentButtonComponent from "./buttons/TransparentButtonComponent";
 import CustomizedSnackbars from "./notfifcations/snackbar/CustomizedSnackbars.jsx"
-import { createProject } from "../api/db.js";
-export default function CreatingProject({onAdded, onCreated, projectNames}) {
+export default function CreatingProject({onAdded, onCreated}) {
     const title = useRef();
     const description = useRef();
     const date = useRef();
@@ -29,9 +28,8 @@ export default function CreatingProject({onAdded, onCreated, projectNames}) {
 
     setSnackbar((prev) => {
         return {
+            ...prev,
             isShowed: false,
-            severity: prev.severity,
-            text: prev.text
         }
         });
     };
@@ -42,12 +40,7 @@ export default function CreatingProject({onAdded, onCreated, projectNames}) {
     const [entered, setEntered ] = useState({
         titleEntered: "",
         descriptionEntered: "",
-        dateEntered: "",
-        tasks: [],
-        complete: {
-            completed: 0,
-            completedArr: []
-        }
+        dateEntered: ""
     });
 
     function handleChangeEntered(refname, fieldName) {

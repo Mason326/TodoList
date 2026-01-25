@@ -29,7 +29,6 @@ function TodoList() {
     fetchData().then(data => 
       setCreatedProjects(data)
     )
-    console.log(1)
   }, [projectCreatedCounter])
   
   const handleOpen = (severity, text) => {
@@ -68,9 +67,10 @@ function TodoList() {
   }
 
   function handleCreateNewProject(projectName, projectDueDate, projectDescription) {
-    createProject(projectName, projectDueDate, projectDescription).then(() => {
-      setProjectCreatedCounter(prev => ++prev)
-    })
+    createProject(projectName, projectDueDate, projectDescription, user.id)
+      .then(() => {
+        setProjectCreatedCounter(prev => ++prev)
+      })
     setAddingProject(false);
     handleOpen("info", "Project has been created");
   }
