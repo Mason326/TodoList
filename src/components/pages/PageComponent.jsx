@@ -11,7 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CustomizedSnackbars from "../notfifcations/snackbar/CustomizedSnackbars.jsx";
 import { AppContext } from '../../context/AppContext';
-import { createTask, fetchTasks } from "../../api/db.js";
+import { createTask, fetchTasks, updateTaskStatus } from "../../api/db.js";
 import { AuthContext } from "../../App.jsx";
 
 let currTitle;
@@ -64,7 +64,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     const unCompletedContent = tasks.length - complitedCount > 0 ? tasks.filter(item => !item.is_completed).map(item => 
             <li className="flex items-center" key={item.task_id}>
                 <div className="mr-2">
-                    <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={false} color="default"/>
+                    <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, item.task_id, item.project_id, item.user_id)} checked={false} color="default"/>
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
                     <p className="flex-grow overflow-ellipsis overflow-hidden 2xl:text-xl">{item.task_name}</p>
@@ -76,7 +76,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     const completedContent = complitedCount > 0 ? tasks.filter(item => item.is_completed).map(item => 
             <li className="flex items-center" key={item.task_id}>
                 <div className="mr-2">
-                    <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, tasks.indexOf(item))} checked={true} color="default"/>
+                    <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, item.task_id, item.project_id, item.user_id)} checked={true} color="default"/>
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
                     <p className="flex-grow line-through overflow-ellipsis overflow-hidden 2xl:text-xl">{item.task_name}</p>
@@ -117,18 +117,16 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     }
 
 
-    function handleChangeCheckboxValue(event, index) {
-        // setComplited(prev =>{
-        //     if(event.target.checked) {
-        //         const curr = ++prev;
-        //         complete.completed = curr;
-        //         return curr;
-        //     }
-        //     const curr = --prev;
-        //     complete.completed = curr;
-        //     return curr});
-
-        // chkRefs.current[index] = event.target.checked;
+    function handleChangeCheckboxValue(event, taskId, projectId, userId) {
+        updateTaskStatus(taskId, projectId, userId, event.target.checked).then(() => {
+            setComplited(prev => {
+                if(event.target.checked) {
+                    return ++prev
+                } else {
+                    return --prev
+                }
+            })
+        })
     }
 
     function handleChangeInputText(event) {
