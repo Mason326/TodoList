@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import ColoredButtonComponent from "./buttons/ColoredButtonComponent";
 import TransparentButtonComponent from "./buttons/TransparentButtonComponent";
 import CustomizedSnackbars from "./notfifcations/snackbar/CustomizedSnackbars.jsx"
+import { createProject } from "../api/db.js";
 export default function CreatingProject({onAdded, onCreated, projectNames}) {
     const title = useRef();
     const description = useRef();
@@ -61,17 +62,11 @@ export default function CreatingProject({onAdded, onCreated, projectNames}) {
     function handleSaveEntered(enteredValues) {
         const {titleEntered, descriptionEntered, dateEntered} = {...enteredValues};
 
-        if(titleEntered && descriptionEntered && dateEntered) {
-            if(projectNames.indexOf(titleEntered) === -1) {
-                
-                if(dateEntered >= currentDate)
-                    onCreated(enteredValues)
-                else {
-                    handleOpen("error","Invalid Due Date!");
-                }
-            }
+        if(titleEntered && descriptionEntered && dateEntered) {      
+            if(dateEntered >= currentDate)
+                onCreated(titleEntered, dateEntered, descriptionEntered)
             else {
-                handleOpen("error", "Project name is already in use!");
+                handleOpen("error","Invalid Due Date!");
             }
         }
         else {

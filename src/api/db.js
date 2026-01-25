@@ -25,3 +25,17 @@ export async function fetchTasks(project_id) {
         throw e;
     }    
 }
+
+export async function createProject(projectName, projectDueDate, projectDescription) {
+   try { 
+      const { data, error } = await supabase
+        .from('projects')
+        .insert([
+            { project_name: `${projectName}`, project_created_at: new Date().toISOString().split('T')[0], project_due_date: `${projectDueDate}`, project_description: `${projectDescription}`},
+        ])
+        .select()
+    }
+    catch(e) {
+        throw e;
+    }    
+}

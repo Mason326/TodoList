@@ -195,7 +195,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                     <button onClick={() => handleAddANewTask(enteredValue)} className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100 2xl:text-xl">Add Task</button>
                 </div>
                 <div className="md:flex justify-between">
-                    {tasks.length === complitedCount ? <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2> : <h2 className="my-4 2xl:text-xl">Completed Tasks: {complitedCount}</h2>}
+                    {tasks.length === complitedCount && tasks.length != 0 ? <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2> : <h2 className="my-4 2xl:text-xl">Completed Tasks: {complitedCount}</h2>}
                     <div className="hidden lg:block">
                         <TransparentButtonComponent clickEvent={handleDeleteAllCompleted}>Delete completed</TransparentButtonComponent>
                     </div>

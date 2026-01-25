@@ -9,12 +9,13 @@ import menu from "./assets/menuIcon.svg";
 import { signOutMethod } from './api/user';
 import { AuthContext } from './App';
 import CustomizedSnackbars from './components/notfifcations/snackbar/CustomizedSnackbars';
-import fetchData from './api/db';
+import fetchData, { createProject } from './api/db';
 
 function TodoList() {
   const {user, checkSession} = useContext(AuthContext);
   const [addingProject, setAddingProject] = useState(false);
   const [pageVisibility, setPageVisibility] = useState(-1);
+  const [projectCreatedCounter, setProjectCreatedCounter] = useState(0);
   const [createdProjects, setCreatedProjects] = useState([]);
   const [asideDisplay, setAsideDisplay] = useState(true && window.innerWidth > 1024);
   const dialog = useRef();
@@ -28,7 +29,8 @@ function TodoList() {
     fetchData().then(data => 
       setCreatedProjects(data)
     )
-  }, [])
+    console.log(1)
+  }, [projectCreatedCounter])
   
   const handleOpen = (severity, text) => {
         setSnackbar({
@@ -65,10 +67,10 @@ function TodoList() {
     setPageVisibility(idProject);
   }
 
-  function handleCreateNewProject(lastEnteredValues) {
-    setCreatedProjects((lastData) => {
-      return [ {...lastEnteredValues, tasks: [...lastEnteredValues.tasks]}, ...lastData];
-    });
+  function handleCreateNewProject(projectName, projectDueDate, projectDescription) {
+    createProject(projectName, projectDueDate, projectDescription).then(() => {
+      setProjectCreatedCounter(prev => ++prev)
+    })
     setAddingProject(false);
     handleOpen("info", "Project has been created");
   }
