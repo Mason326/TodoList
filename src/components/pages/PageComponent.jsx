@@ -11,11 +11,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CustomizedSnackbars from "../notfifcations/snackbar/CustomizedSnackbars.jsx";
 import { AppContext } from '../../context/AppContext';
-import { fetchTasks } from "../../api/db.js";
+import { createTask, fetchTasks } from "../../api/db.js";
+import { AuthContext } from "../../App.jsx";
 
 let currTitle;
 export default function PageComponent({neededObj, onProjectDelete}) {
     const App = useContext(AppContext);
+    const {user} = useContext(AuthContext)
     const {project_id, project_name, project_due_date, project_description } = neededObj;
     const [ enteredValue, setEnteredValue ] = useState("");
     // const [ complitedCount, setComplited ] = useState(complete.completed);
@@ -97,13 +99,13 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     }
 
     function handleAddANewTask(taskName) {
-        if(tasks.indexOf(taskName) === -1 && taskName) {
+        if(taskName) {
             if(taskName.length > 50)
             {
                 handleOpen("error", "Taskname is too large!");
                 return;
             }
-            tasks.push(taskName);
+            createTask(taskName, project_id, user.id)
             handleOpen("info", "Task has been added");
             setEnteredValue("");
             }

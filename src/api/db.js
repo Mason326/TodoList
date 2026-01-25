@@ -39,3 +39,18 @@ export async function createProject(projectName, projectDueDate, projectDescript
         throw e;
     }    
 }
+
+export async function createTask(taskName, projectName, user_id) {
+   try { 
+        const { data, error } = await supabase
+         .from('tasks')
+         .insert([
+            { task_name: `${taskName}`, task_created_at: `${new Date().toISOString().split('T')[0]}`, project_id: `${projectName}`, user_id: `${user_id}`  },
+         ])
+         .select()
+    }
+    catch(e) {
+        throw e;
+    }    
+}
+
