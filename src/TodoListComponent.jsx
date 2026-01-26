@@ -9,7 +9,7 @@ import menu from "./assets/menuIcon.svg";
 import { signOutMethod } from './api/user';
 import { AuthContext } from './App';
 import CustomizedSnackbars from './components/notfifcations/snackbar/CustomizedSnackbars';
-import fetchData, { createProject } from './api/db';
+import fetchData, { createProject, deleteAllTasksFromProject, deleteProject } from './api/db';
 
 function TodoList() {
   const {user, checkSession} = useContext(AuthContext);
@@ -28,7 +28,8 @@ function TodoList() {
     fetchData().then(data => 
       setCreatedProjects(data)
     )
-  }, [])
+    console.log(1)
+  }, [pageVisibility])
   
   const handleOpen = (severity, text) => {
         setSnackbar({
@@ -78,10 +79,16 @@ function TodoList() {
     dialog.current.open();
   }
 
-  function handleDeleteProject() {
-      createdProjects.splice(pageVisibility, 1);
-      setPageVisibility(-1);
-      handleOpen("info", "Project has been deleted");
+  function handleDeleteProject(projectId) {
+      //createdProjects.splice(pageVisibility, 1);
+      deleteProject(projectId)
+        .then(() =>
+          deleteAllTasksFromProject(projectId)
+        )
+        .then(() => {
+          setPageVisibility(-1);
+          handleOpen("info", "Project has been deleted");
+        })
   }
 
   async function handleLogOut() {
@@ -121,7 +128,7 @@ function TodoList() {
        pageVisibility !== -1 ? <PageComponent neededObj={createdProjects.findLast(elem => elem.project_id == pageVisibility)} onProjectDelete={handleShowModal}/>: <MainDisplay onAdded={handleAddProject}/>}
        {pageVisibility !== -1 && 
         <ModalComponent ref={dialog} 
-        onDeleteProject={handleDeleteProject}
+        onDeleteProject={() => handleDeleteProject(pageVisibility)}
         projectTitle={createdProjects.findLast(elem => elem.project_id == pageVisibility).project_name}/>
       }
     </div>

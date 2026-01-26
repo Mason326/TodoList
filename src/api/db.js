@@ -42,6 +42,18 @@ export async function createProject(projectName, projectDueDate, projectDescript
     }    
 }
 
+export async function deleteProject(projectId) {
+   try { 
+      const { data, error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('project_id', `${projectId}`)
+    }
+    catch(e) {
+        throw e;
+    }    
+}
+
 export async function createTask(taskName, projectName, user_id) {
    try { 
         const { data, error } = await supabase
@@ -80,6 +92,31 @@ export async function deleteTask(taskId, projectId) {
         .from('tasks')
         .delete()
         .eq('task_id', `${taskId}`)
+        .eq('project_id', `${projectId}`)
+    }
+    catch(e) {
+        throw e;
+    }    
+}
+
+export async function deleteAllCompletedTasks(projectId) {
+   try {         
+        const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('project_id', `${projectId}`)
+        .eq('is_completed', 'TRUE')
+    }
+    catch(e) {
+        throw e;
+    }    
+}
+
+export async function deleteAllTasksFromProject(projectId) {
+   try {         
+        const { error } = await supabase
+        .from('tasks')
+        .delete()
         .eq('project_id', `${projectId}`)
     }
     catch(e) {
