@@ -73,3 +73,16 @@ export async function updateTaskStatus(taskId, projectId, user_id, status) {
         throw e;
     }    
 }
+
+export async function deleteTask(taskId, projectId) {
+   try {         
+        const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('task_id', `${taskId}`)
+        .eq('project_id', `${projectId}`)
+    }
+    catch(e) {
+        throw e;
+    }    
+}
