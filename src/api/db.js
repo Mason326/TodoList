@@ -31,7 +31,7 @@ export async function createProject(projectName, projectDueDate, projectDescript
       const { data, error } = await supabase
         .from('projects')
         .insert([
-            { project_name: `${projectName}`, created_at: `${new Date().toISOString().split('T')[0]}`, project_due_date: `${projectDueDate}`, project_description: projectDescription.trim().length === 0 ? null : `${projectDescription}`, user_id: `${user_id}`},
+            { project_name: `${projectName}`, project_due_date: `${projectDueDate}`, project_description: projectDescription.trim().length === 0 ? null : `${projectDescription}`, user_id: `${user_id}`},
         ])
         .select()
         .single()
@@ -59,7 +59,7 @@ export async function createTask(taskName, projectName, user_id) {
         const { data, error } = await supabase
          .from('tasks')
          .insert([
-            { task_name: `${taskName}`, created_at: `${new Date().toISOString().split('T')[0]}`, project_id: `${projectName}`, user_id: `${user_id}`  },
+            { task_name: `${taskName}`, project_id: `${projectName}`, user_id: `${user_id}`  },
          ])
          .select()
          .single()

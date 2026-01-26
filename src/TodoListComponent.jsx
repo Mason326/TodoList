@@ -79,9 +79,9 @@ function TodoList() {
   }
 
   function handleDeleteProject(projectId) {
-      deleteProject(projectId)
+      deleteAllTasksFromProject(projectId)
         .then(() =>
-          deleteAllTasksFromProject(projectId)
+          deleteProject(projectId)
         )
         .then(() => {
           setPageVisibility(-1);
