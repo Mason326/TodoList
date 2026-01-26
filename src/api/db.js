@@ -27,11 +27,11 @@ export async function fetchTasks(project_id) {
 }
 
 export async function createProject(projectName, projectDueDate, projectDescription, user_id) {
-   try { 
+   try {
       const { data, error } = await supabase
         .from('projects')
         .insert([
-            { project_name: `${projectName}`, project_created_at: `${new Date().toISOString().split('T')[0]}`, project_due_date: `${projectDueDate}`, project_description: `${projectDescription}`, user_id: `${user_id}`},
+            { project_name: `${projectName}`, created_at: `${new Date().toISOString().split('T')[0]}`, project_due_date: `${projectDueDate}`, project_description: projectDescription.trim().length === 0 ? null : `${projectDescription}`, user_id: `${user_id}`},
         ])
         .select()
         .single()
@@ -59,7 +59,7 @@ export async function createTask(taskName, projectName, user_id) {
         const { data, error } = await supabase
          .from('tasks')
          .insert([
-            { task_name: `${taskName}`, task_created_at: `${new Date().toISOString().split('T')[0]}`, project_id: `${projectName}`, user_id: `${user_id}`  },
+            { task_name: `${taskName}`, created_at: `${new Date().toISOString().split('T')[0]}`, project_id: `${projectName}`, user_id: `${user_id}`  },
          ])
          .select()
          .single()
@@ -74,7 +74,7 @@ export async function updateTaskStatus(taskId, projectId, user_id, status) {
    try { 
         const { data, error } = await supabase
         .from('tasks')
-        .update({ is_completed: `${status}` })
+        .update({ task_status: `${status}` })
         .eq('task_id', `${taskId}`)
         .eq('project_id', `${projectId}`)
         .eq('user_id', `${user_id}`)
@@ -105,7 +105,7 @@ export async function deleteAllCompletedTasks(projectId) {
         .from('tasks')
         .delete()
         .eq('project_id', `${projectId}`)
-        .eq('is_completed', 'TRUE')
+        .eq('task_status', 'completed')
     }
     catch(e) {
         throw e;

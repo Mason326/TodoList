@@ -28,7 +28,6 @@ function TodoList() {
     fetchData().then(data => 
       setCreatedProjects(data)
     )
-    console.log(1)
   }, [pageVisibility])
   
   const handleOpen = (severity, text) => {
@@ -80,7 +79,6 @@ function TodoList() {
   }
 
   function handleDeleteProject(projectId) {
-      //createdProjects.splice(pageVisibility, 1);
       deleteProject(projectId)
         .then(() =>
           deleteAllTasksFromProject(projectId)
