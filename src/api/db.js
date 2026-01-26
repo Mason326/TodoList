@@ -58,3 +58,18 @@ export async function createTask(taskName, projectName, user_id) {
     }    
 }
 
+export async function updateTaskStatus(taskId, projectId, user_id, status) {
+   try { 
+        const { data, error } = await supabase
+        .from('tasks')
+        .update({ is_completed: `${status}` })
+        .eq('task_id', `${taskId}`)
+        .eq('project_id', `${projectId}`)
+        .eq('user_id', `${user_id}`)
+        .select()
+        return data
+    }
+    catch(e) {
+        throw e;
+    }    
+}
