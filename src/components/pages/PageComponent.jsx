@@ -11,7 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
 import CustomizedSnackbars from "../notfifcations/snackbar/CustomizedSnackbars.jsx";
 import { AppContext } from '../../context/AppContext';
-import { createTask, fetchTasks, updateTaskStatus } from "../../api/db.js";
+import { createTask, deleteAllCompletedTasks, deleteTask, fetchTasks, updateTaskStatus } from "../../api/db.js";
 import { AuthContext } from "../../App.jsx";
 
 let currTitle;
@@ -37,7 +37,6 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             setTasks(data)
             setComplited(data.filter(tasks => tasks.is_completed).length)
         })
-        console.log(tasks)
     }, [complitedCount, project_id, updatesCount])
     
   const handleOpen = (severity, text) => {
@@ -69,7 +68,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
                     <p className="flex-grow overflow-ellipsis overflow-hidden 2xl:text-xl">{item.task_name}</p>
-                    <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
+                    <button onClick={() => handleDeleteTask(item.task_id, item.project_id)} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
                 </div>
             </li>
     ) : <li className="text-stone-300 h-8 text-xl list-none">* Here tasks you need to do</li>;
@@ -81,7 +80,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 </div>
                 <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
                     <p className="flex-grow line-through overflow-ellipsis overflow-hidden 2xl:text-xl">{item.task_name}</p>
-                    <button onClick={() => handleDeleteTask(tasks.indexOf(item))} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
+                    <button onClick={() => handleDeleteTask(item.task_id, item.project_id)} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
                 </div>
             </li>
     ) : <li className="text-stone-300 h-8 text-xl list-none">* Here your completed tasks</li>
@@ -128,30 +127,18 @@ export default function PageComponent({neededObj, onProjectDelete}) {
         setEnteredValue(event.target.value);
     }
 
-    function handleDeleteAllCompleted() {
-        // let arr = chkRefs.current;
-        // let cntr = 0;
-        // while(arr.filter(elem => elem).length > 0) {
-        //     if(arr[cntr])
-        //         arr = handleDeleteTask(cntr);
-        //     else
-        //         ++cntr;
-        // }
+    function handleDeleteAllCompleted(projectId) {
+        deleteAllCompletedTasks(projectId)
+            .then(() =>
+                setUpdatesCount(prev => ++prev)
+            )
     }
 
-    function handleDeleteTask(index) {
-        // tasks.splice(index, 1);
-        // const currentCheck = chkRefs.current[index];
-        // setComplited(prev => { 
-        //     if(currentCheck) {
-        //         const curr = --prev;
-        //         complete.completed = curr;
-        //         return curr;
-        //     }
-        //     return setComplited(prev) }
-        // );
-        // chkRefs.current.splice(index, 1);
-        // return chkRefs.current;
+    function handleDeleteTask(taskId, projectId) {
+        deleteTask(taskId, projectId)
+            .then(() =>
+                setUpdatesCount(prev => ++prev)
+            )
     }
     
     return (
@@ -165,9 +152,6 @@ export default function PageComponent({neededObj, onProjectDelete}) {
         <div className="lg:hidden">
             <IconButton sx={{position: "absolute", top: 20, right: 16}} size="large" onClick={App.deleteProject}>
                <DeleteIcon sx={{scale: 1.5}} /> 
-            </IconButton>
-            <IconButton sx={{position: "absolute", top: 20, right: 81}} size="large" onClick={App.saveState}>
-                <SaveIcon sx={{scale: 1.5}} />
             </IconButton>
         </div>
         <section className="pt-4 pl-10 md:pl-24 lg:p-0 min-w-96 my-16 lg:my-0 lg:py-16 flex-grow flex flex-wrap h-full">
@@ -194,7 +178,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 <div className="md:flex justify-between">
                     {tasks.length === complitedCount && tasks.length != 0 ? <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2> : <h2 className="my-4 2xl:text-xl">Completed Tasks: {complitedCount}</h2>}
                     <div className="hidden lg:block">
-                        <TransparentButtonComponent clickEvent={handleDeleteAllCompleted}>Delete completed</TransparentButtonComponent>
+                        <TransparentButtonComponent clickEvent={() => handleDeleteAllCompleted(project_id)}>Delete completed</TransparentButtonComponent>
                     </div>
                 </div>
                 <div className="lg:hidden mt-8">
