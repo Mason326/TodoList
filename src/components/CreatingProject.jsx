@@ -1,8 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useContext } from "react";
 import ColoredButtonComponent from "./buttons/ColoredButtonComponent";
 import TransparentButtonComponent from "./buttons/TransparentButtonComponent";
 import CustomizedSnackbars from "./notfifcations/snackbar/CustomizedSnackbars.jsx"
+import { AppContext } from "../context/AppContext.jsx";
 export default function CreatingProject({onAdded, onCreated}) {
+    const {projects} = useContext(AppContext)
     const title = useRef();
     const description = useRef();
     const date = useRef();
@@ -53,13 +55,18 @@ export default function CreatingProject({onAdded, onCreated}) {
     }
 
     function handleSaveEntered(enteredValues) {
+        const projectNames = projects.map(item => item.project_name)
         const {titleEntered, descriptionEntered, dateEntered} = {...enteredValues};
 
         if(titleEntered && dateEntered) {      
-            if(dateEntered >= currentDate)
-                onCreated(titleEntered, dateEntered, descriptionEntered)
-            else {
-                handleOpen("error","Invalid Due Date!");
+            if(!projectNames.find(item => item == titleEntered.trim())) {
+                if(dateEntered >= currentDate)
+                    onCreated(titleEntered, dateEntered, descriptionEntered)
+                else {
+                    handleOpen("error","Invalid Due Date!");
+                }
+            } else {
+                handleOpen("error","Duplicate name of a project!");
             }
         }
         else {
