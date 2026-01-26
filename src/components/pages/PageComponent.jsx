@@ -1,4 +1,4 @@
-import {  useState, useRef, useContext, useEffect } from "react";
+import {  useState, useContext, useEffect } from "react";
 import can from "../../assets/can_16228887.png"
 import Checkbox from '@mui/material/Checkbox';
 import TransparentButtonComponent from "../buttons/TransparentButtonComponent"; 
@@ -35,7 +35,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     useEffect(() => {   
         fetchTasks(project_id).then(data => {
             setTasks(data)
-            setComplited(data.filter(tasks => tasks.is_completed).length)
+            setComplited(data.filter(tasks => tasks.task_status == "completed").length)
         })
     }, [complitedCount, project_id, updatesCount])
     
@@ -61,7 +61,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
       });
   };
     
-    const unCompletedContent = tasks.length - complitedCount > 0 ? tasks.filter(item => !item.is_completed).map(item => 
+    const unCompletedContent = tasks.length - complitedCount > 0 ? tasks.filter(item => item.task_status == "uncompleted").map(item => 
             <li className="flex items-center" key={item.task_id}>
                 <div className="mr-2">
                     <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, item.task_id, item.project_id, item.user_id)} checked={false} color="default"/>
@@ -73,7 +73,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             </li>
     ) : <li className="text-stone-300 h-8 text-xl list-none">* Here tasks you need to do</li>;
 
-    const completedContent = complitedCount > 0 ? tasks.filter(item => item.is_completed).map(item => 
+    const completedContent = complitedCount > 0 ? tasks.filter(item => item.task_status == "completed").map(item => 
             <li className="flex items-center" key={item.task_id}>
                 <div className="mr-2">
                     <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, item.task_id, item.project_id, item.user_id)} checked={true} color="default"/>
@@ -118,7 +118,11 @@ export default function PageComponent({neededObj, onProjectDelete}) {
 
 
     function handleChangeCheckboxValue(event, taskId, projectId, userId) {
-        updateTaskStatus(taskId, projectId, userId, event.target.checked).then(() => {
+        let status = "uncompleted"
+        if(event.target.checked) {
+            status = "completed"
+        }
+        updateTaskStatus(taskId, projectId, userId, status).then(() => {
             setUpdatesCount(prev => ++prev)
         })
     }

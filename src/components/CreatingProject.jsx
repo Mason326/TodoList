@@ -2,7 +2,9 @@ import { useState, useRef, useContext } from "react";
 import ColoredButtonComponent from "./buttons/ColoredButtonComponent";
 import TransparentButtonComponent from "./buttons/TransparentButtonComponent";
 import CustomizedSnackbars from "./notfifcations/snackbar/CustomizedSnackbars.jsx"
+import { AppContext } from "../context/AppContext.jsx";
 export default function CreatingProject({onAdded, onCreated}) {
+    const {projects} = useContext(AppContext)
     const title = useRef();
     const description = useRef();
     const date = useRef();
@@ -53,13 +55,18 @@ export default function CreatingProject({onAdded, onCreated}) {
     }
 
     function handleSaveEntered(enteredValues) {
+        const projectNames = projects.map(item => item.project_name)
         const {titleEntered, descriptionEntered, dateEntered} = {...enteredValues};
 
-        if(titleEntered && descriptionEntered && dateEntered) {      
-            if(dateEntered >= currentDate)
-                onCreated(titleEntered, dateEntered, descriptionEntered)
-            else {
-                handleOpen("error","Invalid Due Date!");
+        if(titleEntered && dateEntered) {      
+            if(!projectNames.find(item => item == titleEntered.trim())) {
+                if(dateEntered >= currentDate)
+                    onCreated(titleEntered, dateEntered, descriptionEntered)
+                else {
+                    handleOpen("error","Invalid Due Date!");
+                }
+            } else {
+                handleOpen("error","Duplicate name of a project!");
             }
         }
         else {
@@ -100,8 +107,7 @@ export default function CreatingProject({onAdded, onCreated}) {
                         <label className="uppercase">Description</label>
                         <p>
                             <textarea 
-                            ref={description} 
-                            required
+                            ref={description}
                             maxLength={500}
                             className="bg-gray-200 w-full md:w-11/12 h-20 md:h-24 2xl:h-36 min-h-24 max-h-72 outline-none p-2  focus:border-b-2 border-gray-600 2xl:text-2xl"
                             onChange={() => handleChangeEntered(description, "descriptionEntered")}/>
