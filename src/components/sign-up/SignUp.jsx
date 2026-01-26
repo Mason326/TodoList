@@ -130,9 +130,10 @@ export default function SignUp(props) {
   async function handleSignUpWithEmail(email, password, uname) {
     try {
       const successSignUp = await signUpWithEmailAndPassword(email, password, uname);
-      
+      let isRedirect = false
       setDisplaySnack(() => {
         if(successSignUp?.user) {
+          isRedirect = true
           return {
             isShowed: true,
             text: "Successfull sign up",
@@ -147,6 +148,11 @@ export default function SignUp(props) {
         }
         
       });
+      if(isRedirect) {
+        setTimeout(() => {
+          navigate("/dashboard", {replace: true})
+        }, 1000)
+      }
     }
     catch(e) {
       setDisplaySnack(() => {

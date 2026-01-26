@@ -22,6 +22,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     const [ enteredValue, setEnteredValue ] = useState("");
     // const [ complitedCount, setComplited ] = useState(complete.completed);
     const [ complitedCount, setComplited ] = useState(0);
+    const [updatesCount, setUpdatesCount] = useState(0); 
     const [openDialog, setOpen] = useState(false);
     const [tasks, setTasks] = useState([]);
     const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
@@ -37,7 +38,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
             setComplited(data.filter(tasks => tasks.is_completed).length)
         })
         console.log(tasks)
-    }, [complitedCount, project_id])
+    }, [complitedCount, project_id, updatesCount])
     
   const handleOpen = (severity, text) => {
         setSnackbar({
@@ -119,13 +120,7 @@ export default function PageComponent({neededObj, onProjectDelete}) {
 
     function handleChangeCheckboxValue(event, taskId, projectId, userId) {
         updateTaskStatus(taskId, projectId, userId, event.target.checked).then(() => {
-            setComplited(prev => {
-                if(event.target.checked) {
-                    return ++prev
-                } else {
-                    return --prev
-                }
-            })
+            setUpdatesCount(prev => ++prev)
         })
     }
 
