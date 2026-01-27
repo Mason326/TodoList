@@ -27,7 +27,7 @@ export default function AsideComponent({onAdded, onLogout, showAside, setShowAsi
     };
 
 
-    let initialClassesAside = "p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg min-w-72 max-w-72 2xl:min-w-96 2xl:max-w-96 fixed lg:relative min-h-full z-10 hidden lg:block"
+    let initialClassesAside = "p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg min-w-72 max-w-72 2xl:min-w-96 2xl:max-w-96 fixed lg:relative h-full lg:h-auto z-10 hidden lg:block"
     if(!showAside) 
         initialClassesAside+=" hidden"
     else

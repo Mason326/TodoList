@@ -141,7 +141,7 @@ function TodoList() {
         height: 10
       }
     }}>
-        <Fab color='primary' aria-label='ask gpt' sx={{ 
+        <Fab color='primary' aria-label='ask gpt' onClick={handleClickRecomendations} sx={{ 
           bgcolor: 'black',
           color: 'white',
           '&:hover': {
