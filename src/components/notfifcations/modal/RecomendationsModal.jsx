@@ -8,40 +8,38 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import gptBlackIcon from "../../../assets/chat-gpt-black.svg";
 import gptWhiteIcon from "../../../assets/chat-gpt-white.svg";
-import SmartToyIcon from '@mui/icons-material/SmartToy';
+import { Dialog } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import { List, ListItem, ListItemAvatar, ListItemText, Avatar } from '@mui/material';
 
-const bull = (
-  <Box
-    component="span"
-    sx={{ display: 'inline-block', mx: '2px', transform: 'scale(0.8)' }}
-  >
-    •
-  </Box>
-);
-
-export default function Recomendations() {
+export default function Recomendations({open, onClose}) {
     const [messages, setMessages] = React.useState([
       { text: "Can you help me with project tasks?", sender: 'user' },
       { text: "Yeah! Just show them to me", sender: 'ai' },
       { text: "{Some data you need to provide}", sender: 'user' },
   ]);
-  const [input, setInput] = React.useState('');
+
   return (
-    <Box sx={{ minWidth: 350, maxWidth: 720, width: 720 }}>
-    <Card variant="outlined" sx={{ p: 1}}>
-      <CardContent>
-        <Stack sx={{ maxWidth: 850, width: "100%", textAlign: 'center' }} spacing={2}>
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5 }} >
-                  <Box>
-                      <img srcSet={gptBlackIcon} alt="gpt" width='56px' height='56px' />
-                  </Box>
-                  <Typography variant="h4">ChatGPT Assistant</Typography>
-              </Box>
-              <Typography color='text.secondary' component="div" sx={{ textAlign: 'justify' }}>
-                  This ChatGPT Assistant is able to provide recommendations on how to complete assigned tasks in projects.
-              </Typography>
+     <Dialog
+        open={open}
+        onClose={onClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        fullWidth
+        maxWidth="md"
+      >
+    <Card variant="outlined">
+      <CardContent sx={{ p: 2 }}>
+        <Stack sx={{ width: "100%", textAlign: 'center' }} spacing={2}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5 }} >
+            <Box>
+              <img srcSet={gptBlackIcon} alt="gpt" width='56px' height='56px' />
+            </Box>
+            <Typography variant="h4">ChatGPT Assistant</Typography>
+          </Box>
+          <Typography color='text.secondary' component="div" sx={{ textAlign: 'justify' }}>
+            This ChatGPT Assistant is able to provide recommendations on how to complete assigned tasks in projects.
+          </Typography>
           <Box sx={{ 
             height: 300, 
             overflow: 'auto', 
@@ -50,17 +48,17 @@ export default function Recomendations() {
             bgcolor: '#f8f9fa',
             borderRadius: 2 
           }}>
-            <List sx={{ width: '100%' }}>
+             <List sx={{ width: '100%' }}>
               {messages.map((msg, index) => (
                 <ListItem
-                  key={index}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                    alignItems: 'flex-start',
-                    width: '100%',
-                    px: 0
-                  }}
+                key={index}
+                sx={{
+                  display: 'flex',
+                  justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                  alignItems: 'flex-start',
+                  width: '100%',
+                  px: 0
+                }}
                 >
                   <Box sx={{ 
                     display: 'flex',
@@ -99,7 +97,7 @@ export default function Recomendations() {
                         fontSize: '0.75rem',
                         mt: 0.5
                       }}
-                    />
+                      />
                   </Box>
                 </ListItem>
               ))}
@@ -107,10 +105,10 @@ export default function Recomendations() {
           </Box>
         </Stack>
       </CardContent>
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
-        <Button size="small">Thanks, Bye!</Button>
+      <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
+        <Button size="small" onClick={onClose}>Thanks, Bye!</Button>
       </CardActions>
     </Card>
-    </Box>
+    </Dialog>
   );
 }

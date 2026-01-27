@@ -6,7 +6,6 @@ import { createContext, useEffect, useState } from 'react';
 import SignIn from './components/sign-in/SignIn.jsx';
 import { supabase } from './supabase/index.js';
 import WelcomePage from './components/welcome-page-route/components/WelcomePage.jsx';
-import Recomendations from './components/notfifcations/modal/RecomendationsModal.jsx';
 
 export const AuthContext = createContext()
 function App() {
@@ -38,17 +37,19 @@ function App() {
   }
   
   return (
+    <>
     <AuthContext.Provider value={{user, session, checkSession: () => handleCheckSession()}}>    
       <BrowserRouter>
         <Routes>
           <Route path="dashboard" element={<TodoList />} />
           <Route path="signIn" element={<SignIn />} />
           <Route path="signUp" element={<SignUp />} />
-          <Route path="/" element={<Recomendations />} />
+          <Route path="/" element={<WelcomePage />} />
           <Route path="*" element={<div>Oops, this page doesn't exist</div>} />
         </Routes>
       </BrowserRouter>
     </AuthContext.Provider>
+    </>
   )
 } 
 export default App;
