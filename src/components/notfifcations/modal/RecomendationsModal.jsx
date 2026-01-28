@@ -1,4 +1,4 @@
-import * as React from 'react';
+import {useState, useEffect, useRef} from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -11,13 +11,20 @@ import gptWhiteIcon from "../../../assets/chat-gpt-white.svg";
 import { Dialog } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import { List, ListItem, ListItemAvatar, ListItemText, Avatar } from '@mui/material';
+import { askGPT } from '../../../api/gpt/requestGPT';
 
 export default function Recomendations({open, onClose}) {
-    const [messages, setMessages] = React.useState([
-      { text: "Can you help me with project tasks?", sender: 'user' },
-      { text: "Yeah! Just show them to me", sender: 'ai' },
-      { text: "{Some data you need to provide}", sender: 'user' },
+  const [messages, setMessages] = useState([
+      { text: "Can you help me with project tasks?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user' },
   ]);
+  const firstBoot = useRef(true)
+
+  useEffect(() => {
+    if(open && firstBoot.current) {
+      setMessages(prev => [...prev, { text: `123`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }])
+      firstBoot.current = false
+    }
+  }, [open])
 
   return (
      <Dialog
@@ -81,7 +88,7 @@ export default function Recomendations({open, onClose}) {
                     </ListItemAvatar>
                     <ListItemText
                       primary={msg.text}
-                      secondary="10:00"
+                      secondary={msg.time}
                       sx={{
                         bgcolor: msg.sender === 'user' ? '#e3f2fd' : '#f5f5f5',
                         p: 1.5,
