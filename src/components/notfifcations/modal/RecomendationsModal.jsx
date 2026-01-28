@@ -12,16 +12,29 @@ import { Dialog } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import { List, ListItem, ListItemAvatar, ListItemText, Avatar } from '@mui/material';
 import { askGPT } from '../../../api/gpt/requestGPT';
+import { useContext } from 'react';
+import { AuthContext } from '../../../App';
 
 export default function Recomendations({open, onClose}) {
-  const [messages, setMessages] = useState([
-      { text: "Can you help me with project tasks?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user' },
+  const {user} = useContext(AuthContext)
+  const prepArr = JSON.parse(localStorage.getItem('lastPrompt'))
+  const [messages, setMessages] = useState(prepArr.user_id != '' ? [
+    { text: `${prepArr.user_prompt}`, time: `${new Date(`${prepArr.prompt_date}`).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user' },
+    { text: `${prepArr.ai_response}`, time: `${new Date(`${prepArr.response_date}`).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' },
+  ] : [
+    { text: "Can you help me with project tasks?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user' }
   ]);
-  const firstBoot = useRef(true)
+  const promptDate = new Date(JSON.parse(localStorage.getItem("lastPrompt")).prompt_date);
+  promptDate.setDate(promptDate.getDate() + 1);
+  promptDate.setHours(0,0,0,0);
+  const firstBoot = useRef(true && new Date() > promptDate )
 
   useEffect(() => {
     if(open && firstBoot.current) {
-      setMessages(prev => [...prev, { text: `123`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }])
+      setMessages(prev => { 
+        localStorage.setItem("lastPrompt", JSON.stringify({ user_id: user.id, user_prompt: messages[0].text, ai_response: `sdfjk dlsg jdsgjskdj dskgjsdj jdjgjj jdsjgkd`, prompt_date: new Date(), response_date: new Date()}))
+        return [{  text: `${messages[0].text}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `This response should crack your ass`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+      })
       firstBoot.current = false
     }
   }, [open])
@@ -55,6 +68,7 @@ export default function Recomendations({open, onClose}) {
             bgcolor: '#f8f9fa',
             borderRadius: 2 
           }}>
+            <Typography color='text.secondary'>Today</Typography>
              <List sx={{ width: '100%' }}>
               {messages.map((msg, index) => (
                 <ListItem
@@ -94,7 +108,7 @@ export default function Recomendations({open, onClose}) {
                         p: 1.5,
                         borderRadius: 2,
                         wordBreak: 'break-word',
-                        textAlign: msg.sender === 'user' ? 'right' : 'left'
+                        textAlign: 'right'
                       }}
                       primaryTypographyProps={{
                         color: 'text.primary',

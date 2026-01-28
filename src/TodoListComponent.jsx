@@ -29,6 +29,13 @@ function TodoList() {
   const [openRecomendations, setOpenRecomendations] = useState(false);
   
   useEffect(() => {
+    if(!localStorage.getItem('lastPrompt')) {
+      localStorage.setItem('lastPrompt', JSON.stringify({ user_id: '', user_prompt: '', ai_response: '', prompt_date: new Date(0), response_date: new Date(0) }))
+    }
+  }, [])
+
+
+  useEffect(() => {
     fetchData().then(data => 
       setCreatedProjects(data)
     )
