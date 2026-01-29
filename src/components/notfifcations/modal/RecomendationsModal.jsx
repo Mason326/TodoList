@@ -16,14 +16,7 @@ import { useContext } from 'react';
 import { AuthContext } from '../../../App';
 
 export default function Recomendations({open, onClose}) {
-  const {user} = useContext(AuthContext)
-  const prepArr = JSON.parse(localStorage.getItem('lastPrompt'))
-  const [messages, setMessages] = useState(prepArr.user_id != '' ? [
-    { text: `${prepArr.user_prompt}`, time: `${new Date(`${prepArr.prompt_date}`).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user' },
-    { text: `${prepArr.ai_response}`, time: `${new Date(`${prepArr.response_date}`).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' },
-  ] : [
-    { text: "Can you help me with project tasks?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user' }
-  ]);
+  const [messages, setMessages] = useState([]);
   const promptDate = new Date(JSON.parse(localStorage.getItem("lastPrompt")).prompt_date);
   promptDate.setDate(promptDate.getDate() + 1);
   promptDate.setHours(0,0,0,0);
@@ -31,11 +24,16 @@ export default function Recomendations({open, onClose}) {
 
   useEffect(() => {
     if(open && firstBoot.current) {
-      setMessages(prev => { 
-        localStorage.setItem("lastPrompt", JSON.stringify({ user_id: user.id, user_prompt: messages[0].text, ai_response: `sdfjk dlsg jdsgjskdj dskgjsdj jdjgjj jdsjgkd`, prompt_date: new Date(), response_date: new Date()}))
-        return [{  text: `${messages[0].text}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `This response should crack your ass`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+      setMessages(() => { 
+        localStorage.setItem("lastPrompt", JSON.stringify({ user_prompt: "Hi can you help me with task solving?", ai_response: `sdfjk dlsg jdsgjskdj dskgjsdj jdjgjj jdsjgkd`, prompt_date: new Date(), response_date: new Date()}))
+        return [{  text: "Hi can you help me with task solving?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: 'sdfjk dlsg jdsgjskdj dskgjsdj jdjgjj jdsjgkd', time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
       })
       firstBoot.current = false
+    } else {
+      setMessages(() => { 
+        const lastPromptData = JSON.parse(localStorage.getItem("lastPrompt"));
+        return [{  text: `${lastPromptData.user_prompt}`, time: `${new Date(lastPromptData.prompt_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `${lastPromptData.ai_response}`, time: `${new Date(lastPromptData.response_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+      })
     }
   }, [open])
 

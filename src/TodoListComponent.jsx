@@ -27,13 +27,6 @@ function TodoList() {
     text: "Initial text"
   });
   const [openRecomendations, setOpenRecomendations] = useState(false);
-  
-  useEffect(() => {
-    if(!localStorage.getItem('lastPrompt')) {
-      localStorage.setItem('lastPrompt', JSON.stringify({ user_id: '', user_prompt: '', ai_response: '', prompt_date: new Date(0), response_date: new Date(0) }))
-    }
-  }, [])
-
 
   useEffect(() => {
     fetchData().then(data => 
@@ -121,6 +114,7 @@ function TodoList() {
         severity: "info"
       }
     });
+    localStorage.removeItem("lastPrompt")
   }
   catch(e) {
     console.log(e)
@@ -135,29 +129,15 @@ function TodoList() {
     </button>
     <AppContext.Provider value={{creatingPage: handleAddProject, deleteProject: handleShowModal, visiblePage: handleChangeVisibilty, projects: createdProjects}}>
     <Box sx={{ position: 'fixed', right: 25, bottom: 25 }}>
-      <Badge 
-        color="primary" 
-        variant='dot'
-        overlap="circular"
-        sx={{
-      '& .MuiBadge-badge': {
-        top: 10,
-        right: 10,
-        zIndex: 1301,
-        width: 10,
-        height: 10
+    <Fab color='primary' aria-label='ask gpt' onClick={handleClickRecomendations} sx={{ 
+      bgcolor: 'black',
+      color: 'white',
+      '&:hover': {
+        bgcolor: '#333',
       }
-    }}>
-        <Fab color='primary' aria-label='ask gpt' onClick={handleClickRecomendations} sx={{ 
-          bgcolor: 'black',
-          color: 'white',
-          '&:hover': {
-            bgcolor: '#333',
-          }
-      }}>
-          <img srcSet={gptIcon} alt='gpt' />
-        </Fab>
-      </Badge>
+  }}>
+      <img srcSet={gptIcon} alt='gpt' />
+    </Fab>
     </Box>
     <div className="App flex min-h-screen" id="app-container">
       <AsideComponent
