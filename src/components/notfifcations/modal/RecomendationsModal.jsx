@@ -39,7 +39,11 @@ export default function Recomendations({open, onClose}) {
     } else {
       setMessages(() => { 
         const lastPromptData = JSON.parse(localStorage.getItem("lastPrompt"));
-        return [{  text: `${lastPromptData.user_prompt}`, time: `${new Date(lastPromptData.prompt_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `${lastPromptData.ai_response}`, time: `${new Date(lastPromptData.response_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+        if(lastPromptData.ai_response != '') {
+          return [{  text: `${lastPromptData.user_prompt}`, time: `${new Date(lastPromptData.prompt_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `${lastPromptData.ai_response}`, time: `${new Date(lastPromptData.response_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+        } else {
+          return [{  text: `${lastPromptData.user_prompt}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `Thinking...`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+        }
       })
     }
   }, [open])
