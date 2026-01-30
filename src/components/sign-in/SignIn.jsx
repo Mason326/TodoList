@@ -139,7 +139,7 @@ export default function SignIn(props) {
           }
         });
         if(!localStorage.getItem('lastPrompt')) {
-          localStorage.setItem('lastPrompt', JSON.stringify({ user_prompt: '', ai_response: '', prompt_date: new Date(0), response_date: new Date(0) }))
+          localStorage.setItem('lastPrompt', JSON.stringify({ user_prompt: 'Hi can you help me with task solving?', ai_response: '', prompt_date: new Date(0), response_date: new Date(0) }))
         }
         setTimeout(() => {
           navigate("/dashboard",  {replace: false})

@@ -16,7 +16,7 @@ import { AppContext } from '../../../context/AppContext';
 
 export default function Recomendations({open, onClose}) {
   const { projects, allTasks  } = useContext(AppContext)
-  const [messages, setMessages] = useState([{  text: "Hi can you help me with task solving?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }]);
+  const [messages, setMessages] = useState([]);
   const promptDate = new Date(JSON.parse(localStorage.getItem("lastPrompt"))?.prompt_date ?? new Date(0));
   promptDate.setDate(promptDate.getDate() + 1);
   promptDate.setHours(0,0,0,0);
@@ -30,9 +30,9 @@ export default function Recomendations({open, onClose}) {
       }
       askGPT(JSON.stringify(projectWithTasks))
         .then((data) => {
-          setMessages((prev) => { 
+          setMessages(() => { 
             localStorage.setItem("lastPrompt", JSON.stringify({ user_prompt: "Hi can you help me with task solving?", ai_response: `${data}`, prompt_date: new Date(), response_date: new Date()}))
-            return [ ...prev, { text: `${data}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+            return [ {  text: "Hi can you help me with task solving?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `${data}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
           })
           firstBoot.current = false
         })
