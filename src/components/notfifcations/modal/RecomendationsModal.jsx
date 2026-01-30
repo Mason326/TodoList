@@ -1,4 +1,4 @@
-import {useState, useEffect, useRef} from 'react';
+import {useState, useEffect, useRef, useContext} from 'react';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -12,23 +12,30 @@ import { Dialog } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import { List, ListItem, ListItemAvatar, ListItemText, Avatar } from '@mui/material';
 import { askGPT } from '../../../api/gpt/requestGPT';
-import { useContext } from 'react';
-import { AuthContext } from '../../../App';
+import { AppContext } from '../../../context/AppContext';
 
 export default function Recomendations({open, onClose}) {
-  const [messages, setMessages] = useState([]);
-  const promptDate = new Date(JSON.parse(localStorage.getItem("lastPrompt")).prompt_date);
+  const { projects, allTasks  } = useContext(AppContext)
+  const [messages, setMessages] = useState([{  text: "Hi can you help me with task solving?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }]);
+  const promptDate = new Date(JSON.parse(localStorage.getItem("lastPrompt"))?.prompt_date ?? new Date(0));
   promptDate.setDate(promptDate.getDate() + 1);
   promptDate.setHours(0,0,0,0);
   const firstBoot = useRef(true && new Date() > promptDate )
 
   useEffect(() => {
     if(open && firstBoot.current) {
-      setMessages(() => { 
-        localStorage.setItem("lastPrompt", JSON.stringify({ user_prompt: "Hi can you help me with task solving?", ai_response: `sdfjk dlsg jdsgjskdj dskgjsdj jdjgjj jdsjgkd`, prompt_date: new Date(), response_date: new Date()}))
-        return [{  text: "Hi can you help me with task solving?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: 'sdfjk dlsg jdsgjskdj dskgjsdj jdjgjj jdsjgkd', time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
-      })
-      firstBoot.current = false
+      const projectWithTasks = {};
+      for(const project of projects) {
+        projectWithTasks[`${project.project_name}`] = allTasks.filter(item => item.project_id == project.project_id);
+      }
+      askGPT(JSON.stringify(projectWithTasks))
+        .then((data) => {
+          setMessages((prev) => { 
+            localStorage.setItem("lastPrompt", JSON.stringify({ user_prompt: "Hi can you help me with task solving?", ai_response: `${data}`, prompt_date: new Date(), response_date: new Date()}))
+            return [ ...prev, { text: `${data}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+          })
+          firstBoot.current = false
+        })
     } else {
       setMessages(() => { 
         const lastPromptData = JSON.parse(localStorage.getItem("lastPrompt"));
@@ -98,6 +105,13 @@ export default function Recomendations({open, onClose}) {
                         {msg.sender === 'user' ? <PersonIcon fontSize="small" /> : <img srcSet={gptWhiteIcon} alt='gpt' style={{ width: 20, height: 20 }} />}
                       </Avatar>
                     </ListItemAvatar>
+                    <pre style={{
+                        margin: 0,
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        maxWidth: '100%',
+                        overflowWrap: 'break-word'
+                    }}>
                     <ListItemText
                       primary={msg.text}
                       secondary={msg.time}
@@ -106,7 +120,7 @@ export default function Recomendations({open, onClose}) {
                         p: 1.5,
                         borderRadius: 2,
                         wordBreak: 'break-word',
-                        textAlign: 'right'
+                        textAlign: msg.sender === 'user' ? 'right' : 'left'
                       }}
                       primaryTypographyProps={{
                         color: 'text.primary',
@@ -117,6 +131,7 @@ export default function Recomendations({open, onClose}) {
                         mt: 0.5
                       }}
                       />
+                    </pre>
                   </Box>
                 </ListItem>
               ))}
