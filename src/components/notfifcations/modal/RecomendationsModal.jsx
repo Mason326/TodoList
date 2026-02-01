@@ -17,13 +17,13 @@ import { AppContext } from '../../../context/AppContext';
 export default function Recomendations({open, onClose}) {
   const { projects, allTasks  } = useContext(AppContext)
   const [messages, setMessages] = useState([]);
-  const promptDate = new Date(JSON.parse(localStorage.getItem("lastPrompt"))?.prompt_date ?? new Date(0));
-  promptDate.setDate(promptDate.getDate() + 1);
-  promptDate.setHours(0,0,0,0);
-  const firstBoot = useRef(true && new Date() > promptDate )
 
   useEffect(() => {
-    if(open && firstBoot.current) {
+    const promptDate = new Date(JSON.parse(localStorage.getItem("lastPrompt"))?.prompt_date ?? new Date(0));
+    promptDate.setDate(promptDate.getDate() + 1);
+    promptDate.setHours(0,0,0,0);
+    let firstBoot = true && new Date() > promptDate
+    if(open && firstBoot) {
       const projectWithTasks = {};
       for(const project of projects) {
         projectWithTasks[`${project.project_name}`] = allTasks.filter(item => item.project_id == project.project_id);
@@ -34,18 +34,20 @@ export default function Recomendations({open, onClose}) {
             localStorage.setItem("lastPrompt", JSON.stringify({ user_prompt: "Hi can you help me with task solving?", ai_response: `${data}`, prompt_date: new Date(), response_date: new Date()}))
             return [ {  text: "Hi can you help me with task solving?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `${data}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
           })
-          firstBoot.current = false
         })
     } else {
       setMessages(() => { 
         const lastPromptData = JSON.parse(localStorage.getItem("lastPrompt"));
+        let resultArray;
         if(lastPromptData.ai_response != '') {
-          return [{  text: `${lastPromptData.user_prompt}`, time: `${new Date(lastPromptData.prompt_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `${lastPromptData.ai_response}`, time: `${new Date(lastPromptData.response_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+          resultArray = [{  text: `${lastPromptData.user_prompt}`, time: `${new Date(lastPromptData.prompt_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `${lastPromptData.ai_response}`, time: `${new Date(lastPromptData.response_date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
         } else {
-          return [{  text: `${lastPromptData.user_prompt}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `Thinking...`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
+          resultArray = [{  text: `${lastPromptData.user_prompt}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `Thinking...`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
         }
+        return resultArray;
       })
     }
+    return () => firstBoot = false;
   }, [open])
 
   return (
