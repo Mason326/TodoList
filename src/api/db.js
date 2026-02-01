@@ -26,6 +26,19 @@ export async function fetchTasks(project_id) {
     }    
 }
 
+export async function fetchAllTasks() {
+   try { 
+      let { data: tasks, error } = await supabase
+        .from('tasks')
+        .select("*")
+        return tasks
+    }
+    catch(e) {
+        throw e;
+    }    
+}
+
+
 export async function createProject(projectName, projectDueDate, projectDescription, user_id) {
    try {
       const { data, error } = await supabase

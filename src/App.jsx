@@ -37,6 +37,7 @@ function App() {
   }
   
   return (
+    <>
     <AuthContext.Provider value={{user, session, checkSession: () => handleCheckSession()}}>    
       <BrowserRouter>
         <Routes>
@@ -48,6 +49,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </AuthContext.Provider>
+    </>
   )
 } 
 export default App;

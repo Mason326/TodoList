@@ -27,7 +27,7 @@ export default function AsideComponent({onAdded, onLogout, showAside, setShowAsi
     };
 
 
-    let initialClassesAside = "p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg min-w-72 max-w-72 2xl:min-w-96 2xl:max-w-96 fixed lg:relative min-h-full z-10 hidden lg:block"
+    let initialClassesAside = "p-2 mr-12 text-gray-100 font-bold bg-black bg-opacity-95 rounded-tr-lg min-w-72 max-w-72 2xl:min-w-96 2xl:max-w-96 fixed lg:relative h-full lg:h-auto z-10 hidden lg:block"
     if(!showAside) 
         initialClassesAside+=" hidden"
     else
@@ -50,7 +50,7 @@ export default function AsideComponent({onAdded, onLogout, showAside, setShowAsi
             <section className="ml-6 min-w-0 min-h-0 m-0">
                 <VirtualizedList />
             </section>
-            <button className="ml-6 px-5 py-3 md:p-2 mb-2 rounded-lg items-center text-gray-400 bg-transparent transform duration-500 hover:bg-opacity-35 hover:text-gray-200 text-sm my-4 fixed" onClick={() => handleClickOpen()}>
+            <button className="px-5 py-3 md:p-2 rounded-lg items-center text-gray-400 bg-transparent transform duration-500 hover:bg-opacity-35 hover:text-gray-200 text-sm fixed bottom-3 left-3" onClick={() => handleClickOpen()}>
                 <span className="flex justify-between gap-2 items-center">
                     <img src={logout} alt="logout" className="ml-2 w-[2rem] h-[2rem] md:w-[1.5rem] md:h-[1.5rem] 2xl:w-[2.3rem] 2xl:h-[2.3rem]"/>
                     <p className="py-2 pr-2 2xl:py-4 2xl:pr-8 text-xl md:text-base lg:text-xl">LogOut</p>

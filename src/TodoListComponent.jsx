@@ -9,13 +9,17 @@ import menu from "./assets/menuIcon.svg";
 import { signOutMethod } from './api/user';
 import { AuthContext } from './App';
 import CustomizedSnackbars from './components/notfifcations/snackbar/CustomizedSnackbars';
-import fetchData, { createProject, deleteAllTasksFromProject, deleteProject } from './api/db';
+import fetchData, { createProject, deleteAllTasksFromProject, deleteProject, fetchAllTasks } from './api/db';
+import Recomendations from './components/notfifcations/modal/RecomendationsModal';
+import gptIcon from "./assets/chat-gpt-white.svg"
+import { Badge, Box, Fab } from '@mui/material';
 
 function TodoList() {
   const {user, checkSession} = useContext(AuthContext);
   const [addingProject, setAddingProject] = useState(false);
   const [pageVisibility, setPageVisibility] = useState(-1);
   const [createdProjects, setCreatedProjects] = useState([]);
+  const [allTasks, setAllTasks] = useState([]);
   const [asideDisplay, setAsideDisplay] = useState(true && window.innerWidth > 1024);
   const dialog = useRef();
   const [snackbar, setSnackbar] = useState({
@@ -23,12 +27,32 @@ function TodoList() {
     severity: "error",
     text: "Initial text"
   });
+  const [openRecomendations, setOpenRecomendations] = useState(false);
 
   useEffect(() => {
-    fetchData().then(data => 
-      setCreatedProjects(data)
+    fetchData()
+      .then(data => 
+        setCreatedProjects(data)
     )
+
+    fetchAllTasks()
+      .then(data =>
+          setAllTasks(data)
+      )
+
+    if(!localStorage.getItem('lastPrompt')) {
+        localStorage.setItem('lastPrompt', JSON.stringify({ user_prompt: 'Hi can you help me with task solving?', ai_response: '', prompt_date: new Date(0), response_date: new Date(0) }))
+    }
   }, [pageVisibility])
+  
+  const handleClickRecomendations = () => {
+    setOpenRecomendations(true);
+  };
+
+  const handleCloseRecomendations = () => {
+    setOpenRecomendations(false);
+  };
+
   
   const handleOpen = (severity, text) => {
         setSnackbar({
@@ -100,6 +124,7 @@ function TodoList() {
         severity: "info"
       }
     });
+    localStorage.removeItem("lastPrompt")
   }
   catch(e) {
     console.log(e)
@@ -112,7 +137,18 @@ function TodoList() {
     <button className="block lg:hidden py-2 px-4 fixed" onClick={() => setAsideDisplay(prev => !prev)}>
         <img src={menu} alt="menu-Icon" className='size-14' />
     </button>
-    <AppContext.Provider value={{creatingPage: handleAddProject, deleteProject: handleShowModal, visiblePage: handleChangeVisibilty, projects: createdProjects}}>
+    <AppContext.Provider value={{creatingPage: handleAddProject, deleteProject: handleShowModal, visiblePage: handleChangeVisibilty, projects: createdProjects, allTasks: allTasks}}>
+    <Box sx={{ position: 'fixed', right: 25, bottom: 25 }}>
+    <Fab color='primary' aria-label='ask gpt' onClick={handleClickRecomendations} sx={{ 
+      bgcolor: 'black',
+      color: 'white',
+      '&:hover': {
+        bgcolor: '#333',
+      }
+  }}>
+      <img srcSet={gptIcon} alt='gpt' />
+    </Fab>
+    </Box>
     <div className="App flex min-h-screen" id="app-container">
       <AsideComponent
        onAdded={handleAddProject}
@@ -130,6 +166,7 @@ function TodoList() {
         projectTitle={createdProjects.findLast(elem => elem.project_id == pageVisibility).project_name}/>
       }
     </div>
+    <Recomendations open={openRecomendations} onClose={handleCloseRecomendations} />
     </AppContext.Provider>
     </article>
   );
