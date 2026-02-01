@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Expose the port used by the Vite development server
-EXPOSE 5173
+EXPOSE 8888
 
 # Use a default command, can be overridden in Docker compose.yml file
 CMD ["npm", "run", "dev"]

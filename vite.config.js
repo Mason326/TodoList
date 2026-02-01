@@ -6,8 +6,8 @@ export default defineConfig({
    base: "/",
   plugins: [react()],
   server: {
-    host: 'localhost',
-    port: 5173,
+    host: true,
+    port: 8888,
     strictPort: true
   }
 })
