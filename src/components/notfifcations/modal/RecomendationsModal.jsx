@@ -22,7 +22,7 @@ import { AppContext } from "../../../context/AppContext";
 import fetchMessages from "../../../api/chat/chat";
 
 export default function Recomendations({ open, onClose }) {
-  const { projects, allTasks } = useContext(AppContext);
+  // const { projects, allTasks } = useContext(AppContext);
   const [messages, setMessages] = useState([]);
 
   // useEffect(() => {
@@ -47,17 +47,93 @@ export default function Recomendations({ open, onClose }) {
 
   useEffect(() => {
     fetchMessages().then((data) => {
+      data.sort(compareDates);
       setMessages(
         data.map((item) => {
           return {
             text: `${item.message_content}`,
-            time: `${new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`,
+            time: new Date(item.created_at),
             sender: `${item.message_owner}`,
           };
         }),
       );
     });
   }, []);
+
+  function compareDates(a, b) {
+    if (a.created_at > b.created_at) return 1;
+    if (a.created_at == b.created_at) return 0;
+    if (a.created_at < b.created_at) return -1;
+  }
+
+  function placeDateIfNeeded(currentIndex) {
+    const currentMsg = messages[currentIndex];
+    const prevMsg = messages[currentIndex - 1];
+
+    if (currentIndex === 0) {
+      const currentDate = currentMsg.time;
+      return formatDateText(currentDate);
+    }
+
+    const currentDate = currentMsg.time;
+    const prevDate = prevMsg.time;
+
+    if (!isSameDay(currentDate, prevDate)) {
+      return formatDateText(currentDate);
+    }
+
+    return null;
+  }
+
+  function isSameDay(date1, date2) {
+    return (
+      date1.getDate() === date2.getDate() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getFullYear() === date2.getFullYear()
+    );
+  }
+
+  function formatDateText(date) {
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (isSameDay(date, today)) {
+      return (
+        <Typography
+          align="center"
+          color="text.secondary"
+          sx={{ my: 2, fontSize: "0.875rem" }}
+        >
+          Today
+        </Typography>
+      );
+    } else if (isSameDay(date, yesterday)) {
+      return (
+        <Typography
+          align="center"
+          color="text.secondary"
+          sx={{ my: 2, fontSize: "0.875rem" }}
+        >
+          Yesterday
+        </Typography>
+      );
+    } else {
+      return (
+        <Typography
+          align="center"
+          color="text.secondary"
+          sx={{ my: 2, fontSize: "0.875rem" }}
+        >
+          {date.toLocaleDateString("en-US", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+        </Typography>
+      );
+    }
+  }
 
   return (
     <Dialog
@@ -107,87 +183,95 @@ export default function Recomendations({ open, onClose }) {
                 borderRadius: 2,
               }}
             >
-              <Typography color="text.secondary">Today</Typography>
               <List sx={{ width: "100%" }}>
                 {messages.map((msg, index) => (
-                  <ListItem
-                    key={index}
-                    sx={{
-                      display: "flex",
-                      justifyContent:
-                        msg.sender === "user" ? "flex-end" : "flex-start",
-                      alignItems: "flex-start",
-                      width: "100%",
-                      px: 0,
-                    }}
-                  >
-                    <Box
+                  <Box key={index}>
+                    {placeDateIfNeeded(index)}
+                    <ListItem
+                      key={index}
                       sx={{
                         display: "flex",
-                        flexDirection:
-                          msg.sender === "user" ? "row-reverse" : "row",
+                        justifyContent:
+                          msg.sender === "user" ? "flex-end" : "flex-start",
                         alignItems: "flex-start",
-                        maxWidth: "80%",
+                        width: "100%",
+                        px: 0,
                       }}
                     >
-                      <ListItemAvatar
+                      <Box
                         sx={{
-                          minWidth: "auto",
-                          mr: msg.sender === "user" ? 0 : 1,
-                          ml: msg.sender === "user" ? 1 : 0,
+                          display: "flex",
+                          flexDirection:
+                            msg.sender === "user" ? "row-reverse" : "row",
+                          alignItems: "flex-start",
+                          maxWidth: "80%",
                         }}
                       >
-                        <Avatar
+                        <ListItemAvatar
                           sx={{
-                            bgcolor:
-                              msg.sender === "user" ? "primary.main" : "black",
-                            width: 36,
-                            height: 36,
+                            minWidth: "auto",
+                            mr: msg.sender === "user" ? 0 : 1,
+                            ml: msg.sender === "user" ? 1 : 0,
                           }}
                         >
-                          {msg.sender === "user" ? (
-                            <PersonIcon fontSize="small" />
-                          ) : (
-                            <img
-                              srcSet={gptWhiteIcon}
-                              alt="gpt"
-                              style={{ width: 20, height: 20 }}
-                            />
-                          )}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <pre
-                        style={{
-                          margin: 0,
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                          maxWidth: "100%",
-                          overflowWrap: "break-word",
-                        }}
-                      >
-                        <ListItemText
-                          primary={msg.text}
-                          secondary={msg.time}
-                          sx={{
-                            bgcolor:
-                              msg.sender === "user" ? "#e3f2fd" : "#f5f5f5",
-                            p: 1.5,
-                            borderRadius: 2,
+                          <Avatar
+                            sx={{
+                              bgcolor:
+                                msg.sender === "user"
+                                  ? "primary.main"
+                                  : "black",
+                              width: 36,
+                              height: 36,
+                            }}
+                          >
+                            {msg.sender === "user" ? (
+                              <PersonIcon fontSize="small" />
+                            ) : (
+                              <img
+                                srcSet={gptWhiteIcon}
+                                alt="gpt"
+                                style={{ width: 20, height: 20 }}
+                              />
+                            )}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <pre
+                          style={{
+                            margin: 0,
+                            whiteSpace: "pre-wrap",
                             wordBreak: "break-word",
-                            textAlign: msg.sender === "user" ? "right" : "left",
+                            maxWidth: "100%",
+                            overflowWrap: "break-word",
                           }}
-                          primaryTypographyProps={{
-                            color: "text.primary",
-                            fontSize: "0.9rem",
-                          }}
-                          secondaryTypographyProps={{
-                            fontSize: "0.75rem",
-                            mt: 0.5,
-                          }}
-                        />
-                      </pre>
-                    </Box>
-                  </ListItem>
+                        >
+                          <ListItemText
+                            primary={msg.text}
+                            secondary={msg.time.toLocaleTimeString("ru-RU", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                            sx={{
+                              bgcolor:
+                                msg.sender === "user" ? "#e3f2fd" : "#f5f5f5",
+                              p: 1.5,
+                              borderRadius: 2,
+                              wordBreak: "break-word",
+                              textAlign:
+                                msg.sender === "user" ? "right" : "left",
+                            }}
+                            primaryTypographyProps={{
+                              color: "text.primary",
+                              fontSize: "0.9rem",
+                            }}
+                            secondaryTypographyProps={{
+                              fontSize: "0.75rem",
+                              mt: 0.5,
+                            }}
+                          />
+                        </pre>
+                      </Box>
+                    </ListItem>
+                  </Box>
                 ))}
               </List>
             </Box>
