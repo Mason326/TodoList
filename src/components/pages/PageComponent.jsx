@@ -20,7 +20,6 @@ export default function PageComponent({neededObj, onProjectDelete}) {
     const {user} = useContext(AuthContext)
     const {project_id, project_name, project_due_date, project_description } = neededObj;
     const [ enteredValue, setEnteredValue ] = useState("");
-    // const [ complitedCount, setComplited ] = useState(complete.completed);
     const [ complitedCount, setComplited ] = useState(0);
     const [updatesCount, setUpdatesCount] = useState(0); 
     const [openDialog, setOpen] = useState(false);
@@ -105,8 +104,11 @@ export default function PageComponent({neededObj, onProjectDelete}) {
                 handleOpen("error", "Taskname is too large!");
                 return;
             }
-            createTask(taskName, project_id, user.id).then((data) =>
-                setTasks(prev => [...prev, data])
+            createTask(taskName, project_id, user.id)
+                .then((data) => {    
+                    setTasks(prev => [...prev, data])
+                    App.allTasks.push(data);
+                }
             )
             handleOpen("info", "Task has been added");
             setEnteredValue("");
@@ -122,9 +124,12 @@ export default function PageComponent({neededObj, onProjectDelete}) {
         if(event.target.checked) {
             status = "completed"
         }
-        updateTaskStatus(taskId, projectId, userId, status).then(() => {
-            setUpdatesCount(prev => ++prev)
-        })
+        updateTaskStatus(taskId, projectId, userId, status)
+            .then(() => {
+                const targetItemIndex = App.allTasks.findIndex(item => item.task_id == taskId);
+                App.allTasks[targetItemIndex].task_status = status;
+                setUpdatesCount(prev => ++prev)
+            })
     }
 
     function handleChangeInputText(event) {
@@ -133,16 +138,19 @@ export default function PageComponent({neededObj, onProjectDelete}) {
 
     function handleDeleteAllCompleted(projectId) {
         deleteAllCompletedTasks(projectId)
-            .then(() =>
+            .then(() => {
+                App.allTasks = App.allTasks.filter(item => item.project_id == projectId && item.task_status == "uncompleted");
                 setUpdatesCount(prev => ++prev)
-            )
+            })
     }
 
     function handleDeleteTask(taskId, projectId) {
         deleteTask(taskId, projectId)
-            .then(() =>
+            .then(() => {
+                const targetItemIndex = App.allTasks.findIndex(item => item.task_id == taskId);
+                App.allTasks.splice(targetItemIndex, 1);
                 setUpdatesCount(prev => ++prev)
-            )
+            })
     }
     
     return (
