@@ -8,7 +8,9 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import gptBlackIcon from "../../../assets/chat-gpt-black.svg";
 import gptWhiteIcon from "../../../assets/chat-gpt-white.svg";
-import { Dialog } from "@mui/material";
+import { Dialog, IconButton, Tooltip } from "@mui/material";
+import SendIcon from "@mui/icons-material/Send";
+import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 import {
   List,
@@ -20,6 +22,7 @@ import {
 import { askGPT } from "../../../api/gpt/requestGPT";
 import { AppContext } from "../../../context/AppContext";
 import fetchMessages from "../../../api/chat/chat";
+import MultilineTextField from "../../textFields/MultiLineTextField";
 
 export default function Recomendations({ open, onClose }) {
   // const { projects, allTasks } = useContext(AppContext);
@@ -277,10 +280,26 @@ export default function Recomendations({ open, onClose }) {
             </Box>
           </Stack>
         </CardContent>
-        <CardActions sx={{ justifyContent: "flex-end", p: 2 }}>
-          <Button size="small" onClick={onClose}>
-            Thanks, Bye!
-          </Button>
+        <CardActions
+          sx={{ display: "flex", justifyContent: "space-between", p: 2 }}
+        >
+          <MultilineTextField
+            placeholder="Ask about your tasks or projects..."
+            widthParam="100%"
+            isFullWidth
+          />
+          <Tooltip title="send" placement="top">
+            <IconButton aria-label="delete" size="large">
+              <SendIcon fontSize="inherit" />
+            </IconButton>
+          </Tooltip>
+          <IconButton
+            size="medium"
+            onClick={onClose}
+            sx={{ position: "absolute", top: 10, right: 10 }}
+          >
+            <CloseIcon />
+          </IconButton>
         </CardActions>
       </Card>
     </Dialog>
