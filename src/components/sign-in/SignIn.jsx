@@ -66,7 +66,6 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignIn(props) {
-  //const { onChangeAuth } = props;
   const navigate = useNavigate();
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
@@ -96,7 +95,6 @@ export default function SignIn(props) {
       event.preventDefault();
       return;
     }
-    const data = new FormData(event.currentTarget);
   };
 
   const validateInputs = () => {
@@ -138,9 +136,6 @@ export default function SignIn(props) {
             severity: "success"
           }
         });
-        if(!localStorage.getItem('lastPrompt')) {
-          localStorage.setItem('lastPrompt', JSON.stringify({ user_prompt: 'Hi can you help me with task solving?', ai_response: '', prompt_date: new Date(0), response_date: new Date(0) }))
-        }
         setTimeout(() => {
           navigate("/dashboard",  {replace: false})
         }, 3000);
@@ -173,7 +168,6 @@ export default function SignIn(props) {
             Sign in
           </Typography>
           <Box
-            // component="form"
             onSubmit={handleSubmit}
             noValidate
             sx={{
@@ -221,7 +215,6 @@ export default function SignIn(props) {
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
-            {/* <ForgotPassword open={open} handleClose={handleClose} snackBarVisibility={setDisplaySnack} /> */}
             <Button
               type="submit"
               fullWidth
@@ -230,15 +223,6 @@ export default function SignIn(props) {
             >
               Sign in
             </Button>
-            {/* <Link
-              component="button"
-              type="button"
-              onClick={handleClickOpen}
-              variant="body2"
-              sx={{ alignSelf: 'center' }}
-            >
-              Forgot your password?
-            </Link> */}
           </Box>
           <Divider />
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

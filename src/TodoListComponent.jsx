@@ -39,10 +39,6 @@ function TodoList() {
       .then(data =>
           setAllTasks(data)
       )
-
-    if(!localStorage.getItem('lastPrompt')) {
-        localStorage.setItem('lastPrompt', JSON.stringify({ user_prompt: 'Hi can you help me with task solving?', ai_response: '', prompt_date: new Date(0), response_date: new Date(0) }))
-    }
   }, [pageVisibility])
   
   const handleClickRecomendations = () => {
@@ -124,7 +120,6 @@ function TodoList() {
         severity: "info"
       }
     });
-    localStorage.removeItem("lastPrompt")
   }
   catch(e) {
     console.log(e)
