@@ -88,18 +88,31 @@ export default function Recomendations({ open, onClose }) {
         })
         .then(() => {
           if (messageOwner == "user") {
+            handleAskAI(messageContent, userId);
             inputData.current.value = "";
-            inputData.current.disabled = true;
-            handleAskAI("question", userId);
-          } else if (messageOwner == "ai") {
-            inputData.current.disabled = false;
           }
         });
     }
   }
 
   function handleAskAI(questionText, userId) {
-    handleCreateMessage("Got it", "ai", userId);
+    setMessages((prev) => [
+      ...prev,
+      {
+        text: `${"Thinking..."}`,
+        time: new Date(),
+        sender: `ai`,
+      },
+    ]);
+    askGPT(questionText).then((data) => {
+      createMessage(`${data}`, "ai", userId).then(() => {
+        setMessages((prev) => {
+          const copy = [...prev];
+          copy[copy.length - 1].text = `${data}`;
+          return copy;
+        });
+      });
+    });
   }
 
   function compareDates(a, b) {
