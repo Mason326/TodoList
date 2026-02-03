@@ -20,14 +20,15 @@ import {
   Avatar,
 } from "@mui/material";
 import { askGPT } from "../../../api/gpt/requestGPT";
-import { AppContext } from "../../../context/AppContext";
-import fetchMessages from "../../../api/chat/chat";
+import { createMessage, fetchMessages } from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
+import { AuthContext } from "../../../App";
 
 export default function Recomendations({ open, onClose }) {
-  // const { projects, allTasks } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const inputData = useRef(null);
 
   // useEffect(() => {
   //   if(open) {
@@ -67,6 +68,27 @@ export default function Recomendations({ open, onClose }) {
       });
     }
   }, [open]);
+
+  function handleChangeInput(newVal) {
+    inputData.current.value = newVal;
+  }
+
+  function handleCreateMessage(messageContent, messageOwner, userId) {
+    if (messageContent.trim().length > 0) {
+      createMessage(messageContent, messageOwner, userId);
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: `${messageContent}`,
+          time: new Date(),
+          sender: `${messageOwner}`,
+        },
+      ]);
+      if (messageOwner == "user") {
+        inputData.current.value = "";
+      }
+    }
+  }
 
   function compareDates(a, b) {
     if (a.created_at > b.created_at) return 1;
@@ -312,9 +334,17 @@ export default function Recomendations({ open, onClose }) {
             placeholder="Ask about your tasks or projects..."
             widthParam="100%"
             isFullWidth
+            inputRef={inputData}
+            handleChange={handleChangeInput}
           />
           <Tooltip title="send" placement="top">
-            <IconButton aria-label="delete" size="large">
+            <IconButton
+              aria-label="send"
+              size="large"
+              onClick={() =>
+                handleCreateMessage(inputData.current.value, "user", user.id)
+              }
+            >
               <SendIcon fontSize="inherit" />
             </IconButton>
           </Tooltip>

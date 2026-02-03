@@ -2,7 +2,8 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 
 export default function MultilineTextField(props) {
-  const { isFullWidth, widthParam, placeholder } = props;
+  const { isFullWidth, widthParam, placeholder, inputRef, handleChange } =
+    props;
   return (
     <Box
       component="form"
@@ -17,9 +18,11 @@ export default function MultilineTextField(props) {
       <TextField
         id="outlined-multiline-flexible"
         multiline
+        inputRef={inputRef}
         fullWidth={isFullWidth}
         maxRows={4}
         placeholder={placeholder}
+        onChange={(event) => handleChange(event.target.value)}
       />
     </Box>
   );
