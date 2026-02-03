@@ -8,7 +8,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import gptBlackIcon from "../../../assets/chat-gpt-black.svg";
 import gptWhiteIcon from "../../../assets/chat-gpt-white.svg";
-import { Dialog, IconButton, Tooltip } from "@mui/material";
+import { CircularProgress, Dialog, IconButton, Tooltip } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
@@ -27,6 +27,7 @@ import MultilineTextField from "../../textFields/MultiLineTextField";
 export default function Recomendations({ open, onClose }) {
   // const { projects, allTasks } = useContext(AppContext);
   const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // useEffect(() => {
   //   if(open) {
@@ -49,19 +50,23 @@ export default function Recomendations({ open, onClose }) {
   // }, [open])
 
   useEffect(() => {
-    fetchMessages().then((data) => {
-      data.sort(compareDates);
-      setMessages(
-        data.map((item) => {
-          return {
-            text: `${item.message_content}`,
-            time: new Date(item.created_at),
-            sender: `${item.message_owner}`,
-          };
-        }),
-      );
-    });
-  }, []);
+    if (open) {
+      setLoading(true);
+      fetchMessages().then((data) => {
+        data.sort(compareDates);
+        setMessages(
+          data.map((item) => {
+            return {
+              text: `${item.message_content}`,
+              time: new Date(item.created_at),
+              sender: `${item.message_owner}`,
+            };
+          }),
+        );
+        setLoading(false);
+      });
+    }
+  }, [open]);
 
   function compareDates(a, b) {
     if (a.created_at > b.created_at) return 1;
@@ -186,97 +191,117 @@ export default function Recomendations({ open, onClose }) {
                 borderRadius: 2,
               }}
             >
-              <List sx={{ width: "100%" }}>
-                {messages.map((msg, index) => (
-                  <Box key={index}>
-                    {placeDateIfNeeded(index)}
-                    <ListItem
-                      key={index}
-                      sx={{
-                        display: "flex",
-                        justifyContent:
-                          msg.sender === "user" ? "flex-end" : "flex-start",
-                        alignItems: "flex-start",
-                        width: "100%",
-                        px: 0,
-                      }}
-                    >
-                      <Box
+              {loading ? (
+                <Box
+                  sx={{
+                    height: "100%",
+                    alignContent: "center",
+                  }}
+                >
+                  <Stack spacing={2} alignItems="center">
+                    <CircularProgress
+                      color="inherit"
+                      sx={{ margin: "auto" }}
+                      size={40}
+                    />
+                    <Typography color="text.secondary" sx={{ fontSize: 14 }}>
+                      Loading your chat... Please wait!
+                    </Typography>
+                  </Stack>
+                </Box>
+              ) : (
+                <List sx={{ width: "100" }}>
+                  {messages.map((msg, index) => (
+                    <Box key={index}>
+                      {placeDateIfNeeded(index)}
+                      <ListItem
+                        key={index}
                         sx={{
                           display: "flex",
-                          flexDirection:
-                            msg.sender === "user" ? "row-reverse" : "row",
+                          justifyContent:
+                            msg.sender === "user" ? "flex-end" : "flex-start",
                           alignItems: "flex-start",
-                          maxWidth: "80%",
+                          width: "100%",
+                          px: 0,
                         }}
                       >
-                        <ListItemAvatar
+                        <Box
                           sx={{
-                            minWidth: "auto",
-                            mr: msg.sender === "user" ? 0 : 1,
-                            ml: msg.sender === "user" ? 1 : 0,
+                            display: "flex",
+                            flexDirection:
+                              msg.sender === "user" ? "row-reverse" : "row",
+                            alignItems: "flex-start",
+                            maxWidth: "80%",
                           }}
                         >
-                          <Avatar
+                          <ListItemAvatar
                             sx={{
-                              bgcolor:
-                                msg.sender === "user"
-                                  ? "primary.main"
-                                  : "black",
-                              width: 36,
-                              height: 36,
+                              minWidth: "auto",
+                              mr: msg.sender === "user" ? 0 : 1,
+                              ml: msg.sender === "user" ? 1 : 0,
                             }}
                           >
-                            {msg.sender === "user" ? (
-                              <PersonIcon fontSize="small" />
-                            ) : (
-                              <img
-                                srcSet={gptWhiteIcon}
-                                alt="gpt"
-                                style={{ width: 20, height: 20 }}
-                              />
-                            )}
-                          </Avatar>
-                        </ListItemAvatar>
-                        <pre
-                          style={{
-                            margin: 0,
-                            whiteSpace: "pre-wrap",
-                            wordBreak: "break-word",
-                            maxWidth: "100%",
-                            overflowWrap: "break-word",
-                          }}
-                        >
-                          <ListItemText
-                            primary={msg.text}
-                            secondary={msg.time.toLocaleTimeString("ru-RU", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                            sx={{
-                              bgcolor:
-                                msg.sender === "user" ? "#e3f2fd" : "#f5f5f5",
-                              p: 1.5,
-                              borderRadius: 2,
+                            <Avatar
+                              sx={{
+                                bgcolor:
+                                  msg.sender === "user"
+                                    ? "primary.main"
+                                    : "black",
+                                width: 36,
+                                height: 36,
+                              }}
+                            >
+                              {msg.sender === "user" ? (
+                                <PersonIcon fontSize="small" />
+                              ) : (
+                                <img
+                                  srcSet={gptWhiteIcon}
+                                  alt="gpt"
+                                  style={{ width: 20, height: 20 }}
+                                />
+                              )}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <pre
+                            style={{
+                              margin: 0,
+                              whiteSpace: "pre-wrap",
                               wordBreak: "break-word",
-                              textAlign:
-                                msg.sender === "user" ? "right" : "left",
+                              maxWidth: "100%",
+                              overflowWrap: "break-word",
                             }}
-                            primaryTypographyProps={{
-                              color: "text.primary",
-                              fontSize: "0.9rem",
-                            }}
-                            secondaryTypographyProps={{
-                              fontSize: "0.75rem",
-                              mt: 0.5,
-                            }}
-                          />
-                        </pre>
-                      </Box>
-                    </ListItem>
-                  </Box>
-                ))}
-              </List>
+                          >
+                            <ListItemText
+                              primary={msg.text}
+                              secondary={msg.time.toLocaleTimeString("ru-RU", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                              sx={{
+                                bgcolor:
+                                  msg.sender === "user" ? "#e3f2fd" : "#f5f5f5",
+                                p: 1.5,
+                                borderRadius: 2,
+                                wordBreak: "break-word",
+                                textAlign:
+                                  msg.sender === "user" ? "right" : "left",
+                              }}
+                              primaryTypographyProps={{
+                                color: "text.primary",
+                                fontSize: "0.9rem",
+                              }}
+                              secondaryTypographyProps={{
+                                fontSize: "0.75rem",
+                                mt: 0.5,
+                              }}
+                            />
+                          </pre>
+                        </Box>
+                      </ListItem>
+                    </Box>
+                  ))}
+                </List>
+              )}
             </Box>
           </Stack>
         </CardContent>
