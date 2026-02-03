@@ -21,7 +21,6 @@ export async function createMessage(messageContent, messageOwner, userId) {
         },
       ])
       .select();
-    return data;
   } catch (e) {
     throw e;
   }

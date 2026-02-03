@@ -75,19 +75,31 @@ export default function Recomendations({ open, onClose }) {
 
   function handleCreateMessage(messageContent, messageOwner, userId) {
     if (messageContent.trim().length > 0) {
-      createMessage(messageContent, messageOwner, userId);
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: `${messageContent}`,
-          time: new Date(),
-          sender: `${messageOwner}`,
-        },
-      ]);
-      if (messageOwner == "user") {
-        inputData.current.value = "";
-      }
+      createMessage(messageContent, messageOwner, userId)
+        .then(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: `${messageContent}`,
+              time: new Date(),
+              sender: `${messageOwner}`,
+            },
+          ]);
+        })
+        .then(() => {
+          if (messageOwner == "user") {
+            inputData.current.value = "";
+            inputData.current.disabled = true;
+            handleAskAI("question", userId);
+          } else if (messageOwner == "ai") {
+            inputData.current.disabled = false;
+          }
+        });
     }
+  }
+
+  function handleAskAI(questionText, userId) {
+    handleCreateMessage("Got it", "ai", userId);
   }
 
   function compareDates(a, b) {
