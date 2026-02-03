@@ -23,32 +23,14 @@ import { askGPT } from "../../../api/gpt/requestGPT";
 import { createMessage, fetchMessages } from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
+import { AppContext } from "../../../context/AppContext";
 
 export default function Recomendations({ open, onClose }) {
   const { user } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputData = useRef(null);
-
-  // useEffect(() => {
-  //   if(open) {
-  //     const projectWithTasks = {};
-  //     for(const project of projects) {
-  //       projectWithTasks[`${project.project_name}`] = allTasks.filter(item => item.project_id == project.project_id);
-  //     }
-  //     // askGPT(JSON.stringify(projectWithTasks))
-  //     //   .then((data) => {
-  //     //     setMessages(() => {
-  //     //       localStorage.setItem("lastPrompt", JSON.stringify({ user_prompt: "Hi can you help me with task solving?", ai_response: `${data}`, prompt_date: new Date(), response_date: new Date()}))
-  //     //       return [ {  text: "Hi can you help me with task solving?", time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'user'  }, { text: `${data}`, time: `${new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`, sender: 'ai' }]
-  //     //     })
-  //     //   })
-  //   } else {
-  //     setMessages(() => {
-
-  //     })
-  //   }
-  // }, [open])
+  const { projects, allTasks } = useContext(AppContext);
 
   useEffect(() => {
     if (open) {
@@ -104,7 +86,17 @@ export default function Recomendations({ open, onClose }) {
         sender: `ai`,
       },
     ]);
-    askGPT(questionText).then((data) => {
+    const projectWithTasks = {};
+    for (const project of projects) {
+      projectWithTasks[`${project.project_name}`] = allTasks.filter(
+        (item) => item.project_id == project.project_id,
+      );
+    }
+    askGPT(
+      messages.slice(-6),
+      JSON.stringify(projectWithTasks),
+      questionText,
+    ).then((data) => {
       createMessage(`${data}`, "ai", userId).then(() => {
         setMessages((prev) => {
           const copy = [...prev];
