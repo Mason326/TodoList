@@ -19,11 +19,12 @@ import {
   ListItemText,
   Avatar,
 } from "@mui/material";
-import { askGPT } from "../../../api/gpt/requestGPT";
+// import { askGPT } from "../../../api/gpt/requestGPT";
 import { createMessage, fetchMessages } from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
 import { AppContext } from "../../../context/AppContext";
+import { sendToAgent } from "../../../client/sendToAgent";
 
 export default function Recomendations({ open, onClose }) {
   const { user } = useContext(AuthContext);
@@ -92,7 +93,7 @@ export default function Recomendations({ open, onClose }) {
         (item) => item.project_id == project.project_id,
       );
     }
-    askGPT(
+    sendToAgent(
       messages.slice(-6),
       JSON.stringify(projectWithTasks),
       questionText,
