@@ -6,13 +6,14 @@ export async function createProject(
   projectDescription,
 ) {
   try {
-    console.log(supabaseClient);
     const { data, error } = await supabaseClient
       .from("projects")
       .insert([
         {
           project_name: `${projectName}`,
-          project_due_date: `${projectDueDate}`,
+          project_due_date: new Date(projectDueDate)
+            .toISOString()
+            .split("T")[0],
           project_description:
             projectDescription.trim().length === 0
               ? null
@@ -21,7 +22,7 @@ export async function createProject(
       ])
       .select()
       .single();
-    console.log("done");
+    return data;
   } catch (e) {
     console.error("Error:", e);
   }
