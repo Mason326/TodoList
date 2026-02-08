@@ -5,7 +5,10 @@ import cors from "cors";
 import { z } from "zod";
 import { supabaseAuthMiddleware } from "../supabase/supabase-server-tools/middleware.js";
 import { createClient } from "@supabase/supabase-js";
-import { createProject } from "../supabase/supabase-server-tools/db.js";
+import {
+  createProject,
+  createTaskWithResolvingProjectName,
+} from "../supabase/supabase-server-tools/db.js";
 
 dotenv.config();
 const app = express();
@@ -31,14 +34,30 @@ const createProjectTool = tool({
     project_description: z.string().default(""),
   }),
   async execute({ project_name, due_date, project_description }) {
-    createProject(project_name, due_date, project_description);
+    createProject(project_name, due_date, project_description).then((data) => {
+      return data;
+    });
+  },
+});
+
+const createTaskTool = tool({
+  name: "create_task",
+  description: "Creates a task in a project with a given name",
+  parameters: z.object({
+    task_name: z.string(),
+    project_name: z.string(),
+  }),
+  async execute({ task_name, project_name }) {
+    createTaskWithResolvingProjectName(task_name, project_name).then((data) => {
+      return data;
+    });
   },
 });
 
 export const todolistAgent = new Agent({
   name: "TodoList Agent",
   model: "gpt-4.1",
-  tools: [createProjectTool],
+  tools: [createProjectTool, createTaskTool],
   instructions: `
     You are an app assistant and your main task is to give user advices how to complete tasks with the most efficiency in each project. You can mix up the order of tasks if you think it will be the most optimal.
 
