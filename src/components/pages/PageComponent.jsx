@@ -18,12 +18,10 @@ import {
   fetchTasks,
   updateTaskStatus,
 } from "../../api/supabase/supabase-utils/db.js";
-import { AuthContext } from "../../App.jsx";
 
 let currTitle;
 export default function PageComponent({ neededObj, onProjectDelete }) {
   const App = useContext(AppContext);
-  const { user } = useContext(AuthContext);
   const { project_id, project_name, project_due_date, project_description } =
     neededObj;
   const [enteredValue, setEnteredValue] = useState("");
@@ -83,7 +81,6 @@ export default function PageComponent({ neededObj, onProjectDelete }) {
                     event,
                     item.task_id,
                     item.project_id,
-                    item.user_id,
                   )
                 }
                 checked={false}
@@ -123,7 +120,6 @@ export default function PageComponent({ neededObj, onProjectDelete }) {
                     event,
                     item.task_id,
                     item.project_id,
-                    item.user_id,
                   )
                 }
                 checked={true}
@@ -168,7 +164,7 @@ export default function PageComponent({ neededObj, onProjectDelete }) {
         handleOpen("error", "Taskname is too large!");
         return;
       }
-      createTask(taskName, project_id, user.id).then((data) => {
+      createTask(taskName, project_id).then((data) => {
         setTasks((prev) => [...prev, data]);
         App.allTasks.push(data);
       });
@@ -179,12 +175,12 @@ export default function PageComponent({ neededObj, onProjectDelete }) {
     }
   }
 
-  function handleChangeCheckboxValue(event, taskId, projectId, userId) {
+  function handleChangeCheckboxValue(event, taskId, projectId) {
     let status = "uncompleted";
     if (event.target.checked) {
       status = "completed";
     }
-    updateTaskStatus(taskId, projectId, userId, status).then(() => {
+    updateTaskStatus(taskId, projectId, status).then(() => {
       const targetItemIndex = App.allTasks.findIndex(
         (item) => item.task_id == taskId,
       );

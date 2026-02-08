@@ -34,7 +34,6 @@ export async function createProject(
   projectName,
   projectDueDate,
   projectDescription,
-  user_id,
 ) {
   try {
     const { data, error } = await supabase
@@ -47,7 +46,6 @@ export async function createProject(
             projectDescription.trim().length === 0
               ? null
               : `${projectDescription}`,
-          user_id: `${user_id}`,
         },
       ])
       .select()
@@ -69,7 +67,7 @@ export async function deleteProject(projectId) {
   }
 }
 
-export async function createTask(taskName, projectName, user_id) {
+export async function createTask(taskName, projectName) {
   try {
     const { data, error } = await supabase
       .from("tasks")
@@ -77,7 +75,6 @@ export async function createTask(taskName, projectName, user_id) {
         {
           task_name: `${taskName}`,
           project_id: `${projectName}`,
-          user_id: `${user_id}`,
         },
       ])
       .select()
@@ -88,14 +85,13 @@ export async function createTask(taskName, projectName, user_id) {
   }
 }
 
-export async function updateTaskStatus(taskId, projectId, user_id, status) {
+export async function updateTaskStatus(taskId, projectId, status) {
   try {
     const { data, error } = await supabase
       .from("tasks")
       .update({ task_status: `${status}` })
       .eq("task_id", `${taskId}`)
       .eq("project_id", `${projectId}`)
-      .eq("user_id", `${user_id}`)
       .select();
     return data;
   } catch (e) {

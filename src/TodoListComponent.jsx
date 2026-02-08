@@ -88,12 +88,9 @@ function TodoList() {
     projectDueDate,
     projectDescription,
   ) {
-    createProject(
-      projectName,
-      projectDueDate,
-      projectDescription,
-      user.id,
-    ).then((data) => setCreatedProjects((prev) => [...prev, data]));
+    createProject(projectName, projectDueDate, projectDescription).then(
+      (data) => setCreatedProjects((prev) => [...prev, data]),
+    );
     setAddingProject(false);
     handleOpen("info", "Project has been created");
   }
