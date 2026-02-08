@@ -1,4 +1,4 @@
-import { supabase } from "../supabase/supabase-client";
+import { supabase } from "../supabase-client/index.js";
 
 export default async function fetchData() {
   try {
