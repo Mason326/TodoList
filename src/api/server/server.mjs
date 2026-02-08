@@ -2,6 +2,7 @@ import { Agent, tool, run, user, assistant } from "@openai/agents";
 import dotenv from "dotenv";
 import express, { response } from "express";
 import cors from "cors";
+import { z } from "zod";
 
 dotenv.config();
 const app = express();
@@ -9,9 +10,21 @@ app.use(cors());
 app.use(express.json());
 const PORT = 1234;
 
+const createProjectTool = tool({
+  name: "create_project",
+  description: "Create a project with a given name, due date and description",
+  parameters: z.object({
+    project_name: z.string(),
+    project_description: z.string(),
+    due_date: z.date(),
+    user_id: z.uuid(),
+  }),
+});
+
 export const todolistAgent = new Agent({
   name: "TodoList Agent",
   model: "gpt-4.1",
+  tools: [createProjectTool],
   instructions: `
     You are an app assistant and your main task is to give user advices how to complete tasks with the most efficiency in each project. You can mix up the order of tasks if you think it will be the most optimal.
 

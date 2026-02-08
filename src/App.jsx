@@ -4,7 +4,7 @@ import SignUp from "./components/sign-up/SignUp.jsx";
 import TodoList from "./TodoListComponent";
 import { createContext, useEffect, useState } from "react";
 import SignIn from "./components/sign-in/SignIn.jsx";
-import { supabase } from "./supabase/index.js";
+import { supabase } from "./api/supabase/supabase-client/index.js";
 import WelcomePage from "./components/welcome-page-route/components/WelcomePage.jsx";
 
 export const AuthContext = createContext();

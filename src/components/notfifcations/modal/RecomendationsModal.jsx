@@ -24,7 +24,7 @@ import { createMessage, fetchMessages } from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
 import { AppContext } from "../../../context/AppContext";
-import { sendToAgent } from "../../../client/sendToAgent";
+import { sendToAgent } from "../../../api/client/sendToAgent";
 
 export default function Recomendations({ open, onClose }) {
   const { user } = useContext(AuthContext);
