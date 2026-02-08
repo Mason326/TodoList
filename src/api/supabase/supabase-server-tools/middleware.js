@@ -1,4 +1,5 @@
-import { createUserClient, supabaseAdmin } from "./serverClient.js";
+import { createUserClient } from "./serverClient.js";
+import { supabaseAdmin } from "../../server/server.mjs";
 
 export async function supabaseAuthMiddleware(req, res, next) {
   try {
