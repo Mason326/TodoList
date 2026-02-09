@@ -8,6 +8,10 @@ import { createClient } from "@supabase/supabase-js";
 import {
   createProject,
   createTaskWithResolvingProjectName,
+  deleteAllCompletedTasks,
+  deleteProjectByName,
+  deleteTaskByName,
+  updateTaskStatusByName,
 } from "../supabase/supabase-server-tools/db.js";
 
 dotenv.config();
@@ -56,10 +60,73 @@ const createTaskTool = tool({
   },
 });
 
+const updateTaskStatusTool = tool({
+  name: "update_task_status",
+  description:
+    "Updates task status with a given name in a project with a given name",
+  parameters: z.object({
+    project_name: z.string(),
+    task_name: z.string(),
+    task_status: z.string().default("uncompleted"),
+  }),
+  async execute({ project_name, task_name, task_status }) {
+    const updatedTask = await updateTaskStatusByName(
+      project_name,
+      task_name,
+      task_status,
+    );
+    return updatedTask;
+  },
+});
+
+const deleteTaskTool = tool({
+  name: "delete_task",
+  description: "Deletes task with a given name in a project with a given name",
+  parameters: z.object({
+    task_name: z.string(),
+    project_name: z.string(),
+  }),
+  async execute({ task_name, project_name }) {
+    const deletedTask = await deleteTaskByName(project_name, task_name);
+    return deletedTask;
+  },
+});
+
+const deleteAllCompletedTasksTool = tool({
+  name: "delete_all_completed_tasks",
+  description: "Deletes all completed tasks in a project with a given name",
+  parameters: z.object({
+    project_name: z.string(),
+  }),
+  async execute({ project_name }) {
+    const deletedTasks = await deleteAllCompletedTasks(project_name);
+    return deletedTasks;
+  },
+});
+
+const deleteProjectTool = tool({
+  name: "delete_project",
+  description: "Deletes project with a given name",
+  parameters: z.object({
+    project_name: z.string(),
+  }),
+  async execute({ project_name }) {
+    const deletedProject = await deleteProjectByName(project_name);
+    return deletedProject;
+  },
+});
+
 export const todolistAgent = new Agent({
   name: "TodoList Agent",
   model: "gpt-4.1",
-  tools: [createProjectTool, createTaskTool],
+  tools: [
+    createProjectTool,
+    createTaskTool,
+    updateTaskStatusTool,
+    deleteTaskTool,
+    deleteAllCompletedTasksTool,
+    deleteProjectTool,
+  ],
   instructions: `
     You are an app assistant and your main task is to give user advices how to complete tasks with the most efficiency in each project. You can mix up the order of tasks if you think it will be the most optimal.
 
@@ -91,6 +158,7 @@ app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
       ...history,
       user(`${message}`),
     ]);
+
     res.json({ response });
   } catch (error) {
     console.error("Error:", error);

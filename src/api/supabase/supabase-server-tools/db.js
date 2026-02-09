@@ -71,3 +71,107 @@ async function createTask(taskName, projectId) {
     throw e;
   }
 }
+
+export async function updateTaskStatusByName(projectName, taskName, status) {
+  try {
+    const data = await fetchTaskIdByName(projectName, taskName).then((data) => {
+      return supabaseClient
+        .from("tasks")
+        .update({ task_status: `${status}` })
+        .eq("task_id", `${data}`)
+        .select();
+    });
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function fetchTaskIdByName(projectName, taskName) {
+  try {
+    const taskArr = await resolveProjectIdByName(projectName).then(
+      (projectId) => fetchTasksByName(projectId, taskName),
+    );
+    return taskArr[0]?.task_id ?? taskArr?.task_id;
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function fetchTasksByName(projectId, taskName) {
+  try {
+    let { data: tasks, error } = await supabaseClient
+      .from("tasks")
+      .select("*")
+      .eq("project_id", `${projectId}`)
+      .eq("task_name", `${taskName}`);
+    return tasks;
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function deleteTaskByName(projectName, taskName) {
+  try {
+    const deleteResult = await fetchTaskIdByName(projectName, taskName).then(
+      (taskId) =>
+        supabaseClient
+          .from("tasks")
+          .delete()
+          .eq("task_id", `${taskId}`)
+          .select(),
+    );
+    return deleteResult;
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function deleteAllCompletedTasks(projectName) {
+  try {
+    const deleteResult = await resolveProjectIdByName(projectName).then(
+      (projectId) =>
+        supabaseClient
+          .from("tasks")
+          .delete()
+          .eq("project_id", `${projectId}`)
+          .eq("task_status", "completed")
+          .select(),
+    );
+    return deleteResult;
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function deleteProjectByName(projectName) {
+  try {
+    let projectIdHolder = null;
+    const deleteResult = await resolveProjectIdByName(projectName)
+      .then((projectId) => {
+        projectIdHolder = projectId;
+        return deleteAllTasksFromProjectByName(projectId);
+      })
+      .then(() =>
+        supabaseClient
+          .from("projects")
+          .delete()
+          .eq("project_id", `${projectIdHolder}`)
+          .select(),
+      );
+    return deleteResult;
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function deleteAllTasksFromProjectByName(projectId) {
+  try {
+    const { error } = await supabaseClient
+      .from("tasks")
+      .delete()
+      .eq("project_id", `${projectId}`);
+  } catch (e) {
+    throw e;
+  }
+}
