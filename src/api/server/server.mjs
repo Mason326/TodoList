@@ -8,6 +8,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   createProject,
   createTaskWithResolvingProjectName,
+  updateTaskStatusByName,
 } from "../supabase/supabase-server-tools/db.js";
 
 dotenv.config();
@@ -56,10 +57,29 @@ const createTaskTool = tool({
   },
 });
 
+const updateTaskStatusTool = tool({
+  name: "update_task_status",
+  description:
+    "Updated task status with a given name in a project with a given name",
+  parameters: z.object({
+    project_name: z.string(),
+    task_name: z.string(),
+    task_status: z.string().default("uncompleted"),
+  }),
+  async execute({ project_name, task_name, task_status }) {
+    const updatedTask = await updateTaskStatusByName(
+      project_name,
+      task_name,
+      task_status,
+    );
+    return updatedTask;
+  },
+});
+
 export const todolistAgent = new Agent({
   name: "TodoList Agent",
   model: "gpt-4.1",
-  tools: [createProjectTool, createTaskTool],
+  tools: [createProjectTool, createTaskTool, updateTaskStatusTool],
   instructions: `
     You are an app assistant and your main task is to give user advices how to complete tasks with the most efficiency in each project. You can mix up the order of tasks if you think it will be the most optimal.
 
@@ -91,6 +111,7 @@ app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
       ...history,
       user(`${message}`),
     ]);
+
     res.json({ response });
   } catch (error) {
     console.error("Error:", error);
