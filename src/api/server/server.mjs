@@ -2,16 +2,64 @@ import { Agent, tool, run, user, assistant } from "@openai/agents";
 import dotenv from "dotenv";
 import express, { response } from "express";
 import cors from "cors";
+import { z } from "zod";
+import { supabaseAuthMiddleware } from "../supabase/supabase-server-tools/middleware.js";
+import { createClient } from "@supabase/supabase-js";
+import {
+  createProject,
+  createTaskWithResolvingProjectName,
+} from "../supabase/supabase-server-tools/db.js";
 
 dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
 const PORT = 1234;
+export let supabaseClient = null;
+
+export const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    auth: { autoRefreshToken: false, persistSession: false },
+  },
+);
+
+const createProjectTool = tool({
+  name: "create_project",
+  description: "Create a project with a given name, due date and description",
+  parameters: z.object({
+    project_name: z.string(),
+    due_date: z.iso.date().default(new Date().toISOString().split("T")[0]),
+    project_description: z.string().default(""),
+  }),
+  async execute({ project_name, due_date, project_description }) {
+    createProject(project_name, due_date, project_description).then((data) => {
+      return data;
+    });
+  },
+});
+
+const createTaskTool = tool({
+  name: "create_task",
+  description: "Creates a task in a project with a given name",
+  parameters: z.object({
+    task_name: z.string(),
+    project_name: z.string(),
+  }),
+  async execute({ task_name, project_name }) {
+    const createdTask = await createTaskWithResolvingProjectName(
+      task_name,
+      project_name,
+    );
+    return createdTask;
+  },
+});
 
 export const todolistAgent = new Agent({
   name: "TodoList Agent",
   model: "gpt-4.1",
+  tools: [createProjectTool, createTaskTool],
   instructions: `
     You are an app assistant and your main task is to give user advices how to complete tasks with the most efficiency in each project. You can mix up the order of tasks if you think it will be the most optimal.
 
@@ -30,10 +78,10 @@ export const todolistAgent = new Agent({
   `,
 });
 
-app.post("/api/agent", async (req, res) => {
+app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
   try {
-    console.log(req.body);
     const { prevMessages = [], projectWithTasks, message } = req.body;
+    supabaseClient = req.supabaseClient;
     const history = prevMessages.map((item) => {
       return item.sender == "ai" ? assistant(item.text) : user(item.text);
     });

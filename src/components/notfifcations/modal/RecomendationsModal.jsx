@@ -24,10 +24,10 @@ import { createMessage, fetchMessages } from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
 import { AppContext } from "../../../context/AppContext";
-import { sendToAgent } from "../../../client/sendToAgent";
+import { sendToAgent } from "../../../api/client/sendToAgent";
 
 export default function Recomendations({ open, onClose }) {
-  const { user } = useContext(AuthContext);
+  const { session } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputData = useRef(null);
@@ -56,9 +56,9 @@ export default function Recomendations({ open, onClose }) {
     inputData.current.value = newVal;
   }
 
-  function handleCreateMessage(messageContent, messageOwner, userId) {
+  function handleCreateMessage(messageContent, messageOwner) {
     if (messageContent.trim().length > 0) {
-      createMessage(messageContent, messageOwner, userId)
+      createMessage(messageContent, messageOwner)
         .then(() => {
           setMessages((prev) => [
             ...prev,
@@ -71,14 +71,14 @@ export default function Recomendations({ open, onClose }) {
         })
         .then(() => {
           if (messageOwner == "user") {
-            handleAskAI(messageContent, userId);
+            handleAskAI(messageContent);
             inputData.current.value = "";
           }
         });
     }
   }
 
-  function handleAskAI(questionText, userId) {
+  function handleAskAI(questionText) {
     setMessages((prev) => [
       ...prev,
       {
@@ -97,8 +97,9 @@ export default function Recomendations({ open, onClose }) {
       messages.slice(-6),
       JSON.stringify(projectWithTasks),
       questionText,
+      session?.access_token,
     ).then((data) => {
-      createMessage(`${data}`, "ai", userId).then(() => {
+      createMessage(`${data}`, "ai").then(() => {
         setMessages((prev) => {
           const copy = [...prev];
           copy[copy.length - 1].text = `${data}`;
@@ -360,7 +361,7 @@ export default function Recomendations({ open, onClose }) {
               aria-label="send"
               size="large"
               onClick={() =>
-                handleCreateMessage(inputData.current.value, "user", user.id)
+                handleCreateMessage(inputData.current.value, "user")
               }
             >
               <SendIcon fontSize="inherit" />
