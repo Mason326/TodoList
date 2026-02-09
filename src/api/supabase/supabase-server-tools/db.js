@@ -110,3 +110,36 @@ async function fetchTasksByName(projectId, taskName) {
     throw e;
   }
 }
+
+export async function deleteTaskByName(projectName, taskName) {
+  try {
+    const deleteResult = await fetchTaskIdByName(projectName, taskName).then(
+      (taskId) =>
+        supabaseClient
+          .from("tasks")
+          .delete()
+          .eq("task_id", `${taskId}`)
+          .select(),
+    );
+    return deleteResult;
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function deleteAllCompletedTasks(projectName) {
+  try {
+    const deleteResult = await resolveProjectIdByName(projectName).then(
+      (projectId) =>
+        supabaseClient
+          .from("tasks")
+          .delete()
+          .eq("project_id", `${projectId}`)
+          .eq("task_status", "completed")
+          .select(),
+    );
+    return deleteResult;
+  } catch (e) {
+    throw e;
+  }
+}
