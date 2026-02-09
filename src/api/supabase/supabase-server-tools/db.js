@@ -143,3 +143,35 @@ export async function deleteAllCompletedTasks(projectName) {
     throw e;
   }
 }
+
+export async function deleteProjectByName(projectName) {
+  try {
+    let projectIdHolder = null;
+    const deleteResult = await resolveProjectIdByName(projectName)
+      .then((projectId) => {
+        projectIdHolder = projectId;
+        return deleteAllTasksFromProjectByName(projectId);
+      })
+      .then(() =>
+        supabaseClient
+          .from("projects")
+          .delete()
+          .eq("project_id", `${projectIdHolder}`)
+          .select(),
+      );
+    return deleteResult;
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function deleteAllTasksFromProjectByName(projectId) {
+  try {
+    const { error } = await supabaseClient
+      .from("tasks")
+      .delete()
+      .eq("project_id", `${projectId}`);
+  } catch (e) {
+    throw e;
+  }
+}

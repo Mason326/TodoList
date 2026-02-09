@@ -9,6 +9,7 @@ import {
   createProject,
   createTaskWithResolvingProjectName,
   deleteAllCompletedTasks,
+  deleteProjectByName,
   deleteTaskByName,
   updateTaskStatusByName,
 } from "../supabase/supabase-server-tools/db.js";
@@ -103,6 +104,18 @@ const deleteAllCompletedTasksTool = tool({
   },
 });
 
+const deleteProjectTool = tool({
+  name: "delete_project",
+  description: "Deletes project with a given name",
+  parameters: z.object({
+    project_name: z.string(),
+  }),
+  async execute({ project_name }) {
+    const deletedProject = await deleteProjectByName(project_name);
+    return deletedProject;
+  },
+});
+
 export const todolistAgent = new Agent({
   name: "TodoList Agent",
   model: "gpt-4.1",
@@ -112,6 +125,7 @@ export const todolistAgent = new Agent({
     updateTaskStatusTool,
     deleteTaskTool,
     deleteAllCompletedTasksTool,
+    deleteProjectTool,
   ],
   instructions: `
     You are an app assistant and your main task is to give user advices how to complete tasks with the most efficiency in each project. You can mix up the order of tasks if you think it will be the most optimal.
