@@ -48,9 +48,11 @@ const createTaskTool = tool({
     project_name: z.string(),
   }),
   async execute({ task_name, project_name }) {
-    createTaskWithResolvingProjectName(task_name, project_name).then((data) => {
-      return data;
-    });
+    const createdTask = await createTaskWithResolvingProjectName(
+      task_name,
+      project_name,
+    );
+    return createdTask;
   },
 });
 

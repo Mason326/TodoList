@@ -45,11 +45,10 @@ export async function createTaskWithResolvingProjectName(
   projectName,
 ) {
   try {
-    resolveProjectIdByName(projectName).then((outerData) => {
-      createTask(taskName, outerData).then((innerData) => {
-        return innerData;
-      });
-    });
+    const { data, error } = await resolveProjectIdByName(projectName).then(
+      (outerData) => createTask(taskName, outerData),
+    );
+    return data;
   } catch (e) {
     throw e;
   }
@@ -57,7 +56,7 @@ export async function createTaskWithResolvingProjectName(
 
 async function createTask(taskName, projectId) {
   try {
-    const { data, error } = await supabaseClient
+    const result = await supabaseClient
       .from("tasks")
       .insert([
         {
@@ -67,7 +66,7 @@ async function createTask(taskName, projectId) {
       ])
       .select()
       .single();
-    return data;
+    return result;
   } catch (e) {
     throw e;
   }
