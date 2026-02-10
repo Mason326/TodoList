@@ -31,7 +31,26 @@ export default function Recomendations({ open, onClose }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputData = useRef(null);
+  const messagesContainerRef = useRef(null);
   const { projects, allTasks } = useContext(AppContext);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    if (!loading && messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [loading, messages.length]);
 
   useEffect(() => {
     if (open) {
@@ -231,6 +250,7 @@ export default function Recomendations({ open, onClose }) {
                 bgcolor: "#f8f9fa",
                 borderRadius: 2,
               }}
+              ref={messagesContainerRef}
             >
               {loading ? (
                 <Box
@@ -341,6 +361,7 @@ export default function Recomendations({ open, onClose }) {
                       </ListItem>
                     </Box>
                   ))}
+                  <div ref={messagesEndRef} />
                 </List>
               )}
             </Box>
