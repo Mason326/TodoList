@@ -324,8 +324,7 @@ export default function Recomendations({ open, onClose }) {
                                 p: 1.5,
                                 borderRadius: 2,
                                 wordBreak: "break-word",
-                                textAlign:
-                                  msg.sender === "user" ? "right" : "left",
+                                textAlign: "left",
                               }}
                               primaryTypographyProps={{
                                 color: "text.primary",
@@ -334,6 +333,7 @@ export default function Recomendations({ open, onClose }) {
                               secondaryTypographyProps={{
                                 fontSize: "0.75rem",
                                 mt: 0.5,
+                                textAlign: "right",
                               }}
                             />
                           </pre>
