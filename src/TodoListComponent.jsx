@@ -20,7 +20,7 @@ import gptIcon from "./assets/chat-gpt-white.svg";
 import { Badge, Box, Fab } from "@mui/material";
 
 function TodoList() {
-  const { user, checkSession } = useContext(AuthContext);
+  const { user, checkSession, payloadProject } = useContext(AuthContext);
   const [addingProject, setAddingProject] = useState(false);
   const [pageVisibility, setPageVisibility] = useState(-1);
   const [createdProjects, setCreatedProjects] = useState([]);
@@ -40,7 +40,7 @@ function TodoList() {
     fetchData().then((data) => setCreatedProjects(data));
 
     fetchAllTasks().then((data) => setAllTasks(data));
-  }, [pageVisibility]);
+  }, [pageVisibility, payloadProject]);
 
   const handleClickRecomendations = () => {
     setOpenRecomendations(true);

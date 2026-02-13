@@ -15,6 +15,7 @@ export const AuthContext = createContext();
 function App() {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
+  const [payloadProject, setPayloadProject] = useState(null);
 
   const handleAuthChange = useCallback(async (event, session) => {
     setSession(session);
@@ -25,6 +26,7 @@ function App() {
         window.dispatchEvent(
           new CustomEvent("project-change", { detail: payload }),
         );
+        setPayloadProject(payload);
       });
     }
 
@@ -51,7 +53,12 @@ function App() {
   return (
     <>
       <AuthContext.Provider
-        value={{ user, session, checkSession: () => handleCheckSession() }}
+        value={{
+          user,
+          session,
+          checkSession: () => handleCheckSession(),
+          payloadProject,
+        }}
       >
         <BrowserRouter>
           <Routes>

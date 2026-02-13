@@ -154,10 +154,11 @@ export async function subscribeToProjects(userId, onEvent) {
         filter: `user_id=eq.${userId}`,
       },
       (payload) => {
-        console.log(
-          `Realtime event on channel ${channelName}:`,
-          payload.eventType,
-        );
+        // console.log(
+        //   `Realtime event on channel ${channelName}:`,
+        //   payload.eventType,
+        //   payload.new,
+        // );
 
         if (onEvent) {
           onEvent(payload);
