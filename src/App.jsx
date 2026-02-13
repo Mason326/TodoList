@@ -8,7 +8,9 @@ import { supabase } from "./api/supabase/supabase-client/index.js";
 import WelcomePage from "./components/welcome-page-route/components/WelcomePage.jsx";
 import {
   cleanupAllChannels,
+  forceCleanupAllChannels,
   subscribeToProjects,
+  subscribeToTasks,
 } from "./api/supabase/supabase-utils/db.js";
 
 export const AuthContext = createContext();
@@ -16,6 +18,11 @@ function App() {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [payloadProject, setPayloadProject] = useState(null);
+  const [payloadTasks, setPayloadTasks] = useState(null);
+
+  useEffect(() => {
+    forceCleanupAllChannels();
+  }, []);
 
   const handleAuthChange = useCallback(async (event, session) => {
     setSession(session);
@@ -27,6 +34,12 @@ function App() {
           new CustomEvent("project-change", { detail: payload }),
         );
         setPayloadProject(payload);
+      });
+      await subscribeToTasks(session.user.id, (payload) => {
+        window.dispatchEvent(
+          new CustomEvent("task-change", { detail: payload }),
+        );
+        setPayloadTasks(payload);
       });
     }
 
@@ -58,6 +71,7 @@ function App() {
           session,
           checkSession: () => handleCheckSession(),
           payloadProject,
+          payloadTasks,
         }}
       >
         <BrowserRouter>
