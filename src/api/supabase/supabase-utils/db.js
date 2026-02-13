@@ -133,3 +133,40 @@ export async function deleteAllTasksFromProject(projectId) {
     throw e;
   }
 }
+
+export async function subscribeToProjects(props) {
+  const [realtimeChannel, setRealtimeChannel] = props;
+  if (realtimeChannel) {
+    await supabase.removeChannel(realtimeChannel);
+  }
+
+  const channel = supabase
+    .channel("projects-realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "projects",
+      },
+      (payload) => {
+        console.log("Realtime event:", payload.eventType);
+        switch (payload.eventType) {
+          case "INSERT":
+            console.log(payload);
+            break;
+          case "DELETE":
+            console.log(payload);
+            break;
+          default:
+            console.log(payload);
+            break;
+        }
+      },
+    )
+    .subscribe((status) => {
+      console.log("Realtime subscription status:", status);
+    });
+
+  setRealtimeChannel(channel);
+}
