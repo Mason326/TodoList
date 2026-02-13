@@ -18,10 +18,12 @@ import {
   fetchTasks,
   updateTaskStatus,
 } from "../../api/supabase/supabase-utils/db.js";
+import { AuthContext } from "../../App.jsx";
 
 let currTitle;
 export default function PageComponent({ neededObj, onProjectDelete }) {
   const App = useContext(AppContext);
+  const { payloadTasks } = useContext(AuthContext);
   const { project_id, project_name, project_due_date, project_description } =
     neededObj;
   const [enteredValue, setEnteredValue] = useState("");
@@ -43,7 +45,7 @@ export default function PageComponent({ neededObj, onProjectDelete }) {
         data.filter((tasks) => tasks.task_status == "completed").length,
       );
     });
-  }, [complitedCount, project_id, updatesCount]);
+  }, [complitedCount, project_id, updatesCount, payloadTasks]);
 
   const handleOpen = (severity, text) => {
     setSnackbar({

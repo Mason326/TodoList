@@ -133,3 +133,125 @@ export async function deleteAllTasksFromProject(projectId) {
     throw e;
   }
 }
+
+let activeProjectsChannels = new Set();
+let activeTasksChannels = new Set();
+
+export async function subscribeToProjects(userId, onEvent) {
+  if (!userId) return null;
+
+  cleanupUserChannels(userId);
+
+  const channelName = `projects-${userId}-${Date.now()}`;
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "projects",
+        filter: `user_id=eq.${userId}`,
+      },
+      (payload) => {
+        console.log(
+          `Realtime event on channel ${channelName}:`,
+          payload.eventType,
+          payload,
+        );
+        if (onEvent) {
+          onEvent(payload);
+        }
+      },
+    )
+    .subscribe((status) => {
+      console.log(`Subscription ${channelName} status:`, status);
+    });
+
+  activeProjectsChannels.add(channel);
+  return channel;
+}
+
+export function cleanupUserChannels(userId) {
+  if (!userId) return;
+
+  const channelsToRemove = Array.from(activeProjectsChannels).filter(
+    (channel) => channel.topic.includes(`projects-${userId}`),
+  );
+
+  channelsToRemove.forEach((channel) => {
+    supabase.removeChannel(channel);
+    activeProjectsChannels.delete(channel);
+  });
+}
+
+export function forceCleanupAllChannels() {
+  const allChannels = supabase.getChannels();
+
+  allChannels.forEach((channel) => {
+    if (
+      channel.topic.includes("projects-") ||
+      channel.topic.includes("tasks-")
+    ) {
+      supabase.removeChannel(channel);
+    }
+  });
+
+  activeProjectsChannels.clear();
+  activeTasksChannels.clear();
+}
+
+export async function subscribeToTasks(userId, onEvent) {
+  if (!userId) return null;
+
+  cleanupUserTasksChannels(userId);
+
+  const channelName = `tasks-${userId}-${Date.now()}`;
+
+  const channel = supabase
+    .channel(channelName)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "tasks",
+        filter: `user_id=eq.${userId}`,
+      },
+      (payload) => {
+        console.log(
+          `Realtime event on channel ${channelName}:`,
+          payload.eventType,
+          payload,
+        );
+        if (onEvent) {
+          onEvent(payload);
+        }
+      },
+    )
+    .subscribe((status) => {
+      console.log(`Subscription ${channelName} status:`, status);
+    });
+
+  activeTasksChannels.add(channel);
+  return channel;
+}
+
+export function cleanupUserTasksChannels(userId) {
+  if (!userId) return;
+
+  Array.from(activeTasksChannels).forEach((channel) => {
+    if (channel.topic.includes(`tasks-${userId}`)) {
+      supabase.removeChannel(channel);
+      activeTasksChannels.delete(channel);
+    }
+  });
+}
+
+export function cleanupAllChannels() {
+  activeProjectsChannels.forEach((channel) => supabase.removeChannel(channel));
+  activeTasksChannels.forEach((channel) => supabase.removeChannel(channel));
+  activeProjectsChannels.clear();
+  activeTasksChannels.clear();
+}
