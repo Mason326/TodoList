@@ -134,39 +134,60 @@ export async function deleteAllTasksFromProject(projectId) {
   }
 }
 
-export async function subscribeToProjects(props) {
-  const [realtimeChannel, setRealtimeChannel] = props;
-  if (realtimeChannel) {
-    await supabase.removeChannel(realtimeChannel);
-  }
+let activeChannels = new Set();
+
+export async function subscribeToProjects(userId, onEvent) {
+  if (!userId) return null;
+
+  cleanupUserChannels(userId);
+
+  const channelName = `projects-${userId}-${Date.now()}`;
 
   const channel = supabase
-    .channel("projects-realtime")
+    .channel(channelName)
     .on(
       "postgres_changes",
       {
         event: "*",
         schema: "public",
         table: "projects",
+        filter: `user_id=eq.${userId}`,
       },
       (payload) => {
-        console.log("Realtime event:", payload.eventType);
-        switch (payload.eventType) {
-          case "INSERT":
-            console.log(payload);
-            break;
-          case "DELETE":
-            console.log(payload);
-            break;
-          default:
-            console.log(payload);
-            break;
+        console.log(
+          `Realtime event on channel ${channelName}:`,
+          payload.eventType,
+        );
+
+        if (onEvent) {
+          onEvent(payload);
         }
       },
     )
     .subscribe((status) => {
-      console.log("Realtime subscription status:", status);
+      console.log(`Subscription ${channelName} status:`, status);
     });
 
-  setRealtimeChannel(channel);
+  activeChannels.add(channel);
+  return channel;
+}
+
+export function cleanupUserChannels(userId) {
+  if (!userId) return;
+
+  const channelsToRemove = Array.from(activeChannels).filter((channel) =>
+    channel.topic.includes(`projects-${userId}`),
+  );
+
+  channelsToRemove.forEach((channel) => {
+    supabase.removeChannel(channel);
+    activeChannels.delete(channel);
+  });
+}
+
+export function cleanupAllChannels() {
+  activeChannels.forEach((channel) => {
+    supabase.removeChannel(channel);
+  });
+  activeChannels.clear();
 }
