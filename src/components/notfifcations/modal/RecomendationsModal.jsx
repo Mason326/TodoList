@@ -31,6 +31,7 @@ export default function Recomendations({ open, onClose }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputData = useRef(null);
+  const sendButtonRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const { projects, allTasks } = useContext(AppContext);
   const messagesEndRef = useRef(null);
@@ -42,8 +43,21 @@ export default function Recomendations({ open, onClose }) {
     }
   };
 
+  const enableEnterSending = () => {
+    const input = inputData.current;
+    if (input) {
+      input.onkeypress = (event) => {
+        if (!event.shiftKey && event.key == "Enter") {
+          event.preventDefault();
+          sendButtonRef.current?.click();
+        }
+      };
+    }
+  };
+
   useEffect(() => {
     scrollToBottom();
+    enableEnterSending();
   }, [messages]);
 
   useEffect(() => {
@@ -381,6 +395,7 @@ export default function Recomendations({ open, onClose }) {
             <IconButton
               aria-label="send"
               size="large"
+              ref={sendButtonRef}
               onClick={() =>
                 handleCreateMessage(inputData.current.value, "user")
               }
