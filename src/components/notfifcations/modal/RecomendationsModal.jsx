@@ -25,6 +25,7 @@ import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
 import { AppContext } from "../../../context/AppContext";
 import { sendToAgent } from "../../../api/client/sendToAgent";
+import FadeInBox from "./components/DotComponent";
 
 export default function Recomendations({ open, onClose }) {
   const { session } = useContext(AuthContext);
@@ -35,6 +36,7 @@ export default function Recomendations({ open, onClose }) {
   const messagesContainerRef = useRef(null);
   const { projects, allTasks } = useContext(AppContext);
   const messagesEndRef = useRef(null);
+  const [waitingResponse, setWaitingResponse] = useState(false);
 
   const scrollToBottom = () => {
     if (messagesContainerRef.current) {
@@ -112,14 +114,7 @@ export default function Recomendations({ open, onClose }) {
   }
 
   function handleAskAI(questionText) {
-    setMessages((prev) => [
-      ...prev,
-      {
-        text: `${"Thinking..."}`,
-        time: new Date(),
-        sender: `ai`,
-      },
-    ]);
+    setWaitingResponse(true);
     const projectWithTasks = {};
     for (const project of projects) {
       projectWithTasks[`${project.project_name}`] = allTasks.filter(
@@ -133,11 +128,15 @@ export default function Recomendations({ open, onClose }) {
       session?.access_token,
     ).then((data) => {
       createMessage(`${data}`, "ai").then(() => {
-        setMessages((prev) => {
-          const copy = [...prev];
-          copy[copy.length - 1].text = `${data}`;
-          return copy;
-        });
+        setWaitingResponse(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            text: `${data}`,
+            time: new Date(),
+            sender: `ai`,
+          },
+        ]);
       });
     });
   }
@@ -370,6 +369,37 @@ export default function Recomendations({ open, onClose }) {
                       </ListItem>
                     </Box>
                   ))}
+                  {waitingResponse && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        marginLeft: "10px",
+                        marginBottom: "5px",
+                        width: "40px",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <FadeInBox number={1} />
+                      <FadeInBox number={2} />
+                      <FadeInBox number={3} />
+                      {/* <Box
+                        sx={{
+                          width: "10px",
+                          height: "10px",
+                          background: "red",
+                          borderRadius: "50%",
+                        }}
+                      ></Box>
+                      <Box
+                        sx={{
+                          width: "10px",
+                          height: "10px",
+                          background: "red",
+                          borderRadius: "50%",
+                        }}
+                      ></Box> */}
+                    </Box>
+                  )}
                   <div ref={messagesEndRef} />
                 </List>
               )}
