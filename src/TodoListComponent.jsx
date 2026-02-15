@@ -16,7 +16,7 @@ import fetchData, {
   fetchAllTasks,
 } from "./api/supabase/supabase-utils/db";
 import Recomendations from "./components/notfifcations/modal/RecomendationsModal";
-import gptIcon from "./assets/chat-gpt-white.svg";
+import aiBrain from "./assets/aiBrainWhite.svg";
 import { Badge, Box, Fab } from "@mui/material";
 
 function TodoList() {
@@ -146,7 +146,7 @@ function TodoList() {
           <Box sx={{ position: "fixed", right: 25, bottom: 25 }}>
             <Fab
               color="primary"
-              aria-label="ask gpt"
+              aria-label="ask ai"
               onClick={handleClickRecomendations}
               sx={{
                 bgcolor: "black",
@@ -156,7 +156,7 @@ function TodoList() {
                 },
               }}
             >
-              <img srcSet={gptIcon} alt="gpt" />
+              <img srcSet={aiBrain} alt="ai" width={35} height={35} />
             </Fab>
           </Box>
           <div className="App flex min-h-screen" id="app-container">
