@@ -6,8 +6,8 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import gptBlackIcon from "../../../assets/chat-gpt-black.svg";
-import gptWhiteIcon from "../../../assets/chat-gpt-white.svg";
+import aiBrain from "../../../assets/aiBrain.svg";
+import aiBrainWhite from "../../../assets/aiBrainWhite.svg";
 import { CircularProgress, Dialog, IconButton, Tooltip } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
@@ -238,22 +238,17 @@ export default function Recomendations({ open, onClose }) {
               }}
             >
               <Box>
-                <img
-                  srcSet={gptBlackIcon}
-                  alt="gpt"
-                  width="56px"
-                  height="56px"
-                />
+                <img srcSet={aiBrain} alt="ai" width="64px" height="64px" />
               </Box>
-              <Typography variant="h4">ChatGPT Assistant</Typography>
+              <Typography variant="h4">AI Assistant</Typography>
             </Box>
             <Typography
               color="text.secondary"
               component="div"
               sx={{ textAlign: "justify" }}
             >
-              This ChatGPT Assistant is able to provide recommendations on how
-              to complete assigned tasks in projects.
+              This AI Assistant is able to provide recommendations on how to
+              complete assigned tasks in projects.
             </Typography>
             <Box
               sx={{
@@ -330,9 +325,9 @@ export default function Recomendations({ open, onClose }) {
                                 <PersonIcon fontSize="small" />
                               ) : (
                                 <img
-                                  srcSet={gptWhiteIcon}
-                                  alt="gpt"
-                                  style={{ width: 20, height: 20 }}
+                                  srcSet={aiBrainWhite}
+                                  alt="ai"
+                                  style={{ width: 25, height: 25 }}
                                 />
                               )}
                             </Avatar>
