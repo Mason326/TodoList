@@ -1,218 +1,324 @@
-import {  useState, useContext, useEffect } from "react";
-import can from "../../assets/can_16228887.png"
-import Checkbox from '@mui/material/Checkbox';
-import TransparentButtonComponent from "../buttons/TransparentButtonComponent"; 
+import { useState, useContext, useEffect } from "react";
+import can from "../../assets/can_16228887.png";
+import Checkbox from "@mui/material/Checkbox";
+import TransparentButtonComponent from "../buttons/TransparentButtonComponent";
 import SpeedDialTooltipOpen from "../speedDial/SpeedDialTooltipOpen.jsx";
-import CreateTaskDialog from '../notfifcations/createTask/CreateTaskDialog';
+import CreateTaskDialog from "../notfifcations/createTask/CreateTaskDialog";
 import { PageContext } from "../../context/PageContext.jsx";
 import AccordionUsage from "../accordions/AccordionUsage.jsx";
-import IconButton from '@mui/material/IconButton';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SaveIcon from '@mui/icons-material/Save';
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SaveIcon from "@mui/icons-material/Save";
 import CustomizedSnackbars from "../notfifcations/snackbar/CustomizedSnackbars.jsx";
-import { AppContext } from '../../context/AppContext';
-import { createTask, deleteAllCompletedTasks, deleteTask, fetchTasks, updateTaskStatus } from "../../api/db.js";
+import { AppContext } from "../../context/AppContext";
+import {
+  createTask,
+  deleteAllCompletedTasks,
+  deleteTask,
+  fetchTasks,
+  updateTaskStatus,
+} from "../../api/supabase/supabase-utils/db.js";
 import { AuthContext } from "../../App.jsx";
 
 let currTitle;
-export default function PageComponent({neededObj, onProjectDelete}) {
-    const App = useContext(AppContext);
-    const {user} = useContext(AuthContext)
-    const {project_id, project_name, project_due_date, project_description } = neededObj;
-    const [ enteredValue, setEnteredValue ] = useState("");
-    const [ complitedCount, setComplited ] = useState(0);
-    const [updatesCount, setUpdatesCount] = useState(0); 
-    const [openDialog, setOpen] = useState(false);
-    const [tasks, setTasks] = useState([]);
-    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
-    const [snackbar, setSnackbar] = useState({
-        isShowed: false,
-        severity: "error",
-        text: "Initial text"
-    });
+export default function PageComponent({ neededObj, onProjectDelete }) {
+  const App = useContext(AppContext);
+  const { payloadTasks } = useContext(AuthContext);
+  const { project_id, project_name, project_due_date, project_description } =
+    neededObj;
+  const [enteredValue, setEnteredValue] = useState("");
+  const [complitedCount, setComplited] = useState(0);
+  const [updatesCount, setUpdatesCount] = useState(0);
+  const [openDialog, setOpen] = useState(false);
+  const [tasks, setTasks] = useState([]);
+  const label = { inputProps: { "aria-label": "Checkbox demo" } };
+  const [snackbar, setSnackbar] = useState({
+    isShowed: false,
+    severity: "error",
+    text: "Initial text",
+  });
 
-    useEffect(() => {   
-        fetchTasks(project_id).then(data => {
-            setTasks(data)
-            setComplited(data.filter(tasks => tasks.task_status == "completed").length)
-        })
-    }, [complitedCount, project_id, updatesCount])
-    
+  useEffect(() => {
+    fetchTasks(project_id).then((data) => {
+      setTasks(data);
+      setComplited(
+        data.filter((tasks) => tasks.task_status == "completed").length,
+      );
+    });
+  }, [complitedCount, project_id, updatesCount, payloadTasks]);
+
   const handleOpen = (severity, text) => {
-        setSnackbar({
-          isShowed: true,
-          severity,
-          text
-        });
-      };
-      
+    setSnackbar({
+      isShowed: true,
+      severity,
+      text,
+    });
+  };
+
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-        return;
+    if (reason === "clickaway") {
+      return;
     }
 
     setSnackbar((prev) => {
-        return {
-            isShowed: false,
-            severity: prev.severity,
-            text: prev.text
-        }
-      });
+      return {
+        isShowed: false,
+        severity: prev.severity,
+        text: prev.text,
+      };
+    });
   };
-    
-    const unCompletedContent = tasks.length - complitedCount > 0 ? tasks.filter(item => item.task_status == "uncompleted").map(item => 
-            <li className="flex items-center" key={item.task_id}>
-                <div className="mr-2">
-                    <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, item.task_id, item.project_id, item.user_id)} checked={false} color="default"/>
-                </div>
-                <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
-                    <p className="flex-grow overflow-ellipsis overflow-hidden 2xl:text-xl">{item.task_name}</p>
-                    <button onClick={() => handleDeleteTask(item.task_id, item.project_id)} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
-                </div>
-            </li>
-    ) : <li className="text-stone-300 h-8 text-xl list-none">* Here tasks you need to do</li>;
 
-    const completedContent = complitedCount > 0 ? tasks.filter(item => item.task_status == "completed").map(item => 
-            <li className="flex items-center" key={item.task_id}>
-                <div className="mr-2">
-                    <Checkbox {...label} onChange={(event) => handleChangeCheckboxValue(event, item.task_id, item.project_id, item.user_id)} checked={true} color="default"/>
-                </div>
-                <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
-                    <p className="flex-grow line-through overflow-ellipsis overflow-hidden 2xl:text-xl">{item.task_name}</p>
-                    <button onClick={() => handleDeleteTask(item.task_id, item.project_id)} className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl">Clear</button>
-                </div>
-            </li>
-    ) : <li className="text-stone-300 h-8 text-xl list-none">* Here your completed tasks</li>
-
-    const handleClickOpen = () => {
-    setOpen(true);
-    };
-
-    const handleClose = () => {
-    setOpen(false);
-    };
-    
-    if(currTitle !== project_name) {
-        currTitle = project_name;
-        setEnteredValue("");
-    }
-
-    function handleAddANewTask(taskName) {
-        if(taskName) {
-            if(taskName.length > 50)
-            {
-                handleOpen("error", "Taskname is too large!");
-                return;
-            }
-            createTask(taskName, project_id, user.id)
-                .then((data) => {    
-                    setTasks(prev => [...prev, data])
-                    App.allTasks.push(data);
+  const unCompletedContent =
+    tasks.length - complitedCount > 0 ? (
+      tasks
+        .filter((item) => item.task_status == "uncompleted")
+        .map((item) => (
+          <li className="flex items-center" key={item.task_id}>
+            <div className="mr-2">
+              <Checkbox
+                {...label}
+                onChange={(event) =>
+                  handleChangeCheckboxValue(
+                    event,
+                    item.task_id,
+                    item.project_id,
+                  )
                 }
-            )
-            handleOpen("info", "Task has been added");
-            setEnteredValue("");
-            }
-        else {
-            handleOpen("error", "This taskname isn't available!")
-        }
-    }
+                checked={false}
+                color="default"
+              />
+            </div>
+            <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
+              <p className="flex-grow overflow-ellipsis overflow-hidden 2xl:text-xl">
+                {item.task_name}
+              </p>
+              <button
+                onClick={() => handleDeleteTask(item.task_id, item.project_id)}
+                className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl"
+              >
+                Clear
+              </button>
+            </div>
+          </li>
+        ))
+    ) : (
+      <li className="text-stone-300 h-8 text-xl list-none">
+        * Here tasks you need to do
+      </li>
+    );
 
+  const completedContent =
+    complitedCount > 0 ? (
+      tasks
+        .filter((item) => item.task_status == "completed")
+        .map((item) => (
+          <li className="flex items-center" key={item.task_id}>
+            <div className="mr-2">
+              <Checkbox
+                {...label}
+                onChange={(event) =>
+                  handleChangeCheckboxValue(
+                    event,
+                    item.task_id,
+                    item.project_id,
+                  )
+                }
+                checked={true}
+                color="default"
+              />
+            </div>
+            <div className="flex px-4 py-2 my-2 items-center bg-slate-100 transform duration-500 hover:bg-slate-200 flex-grow">
+              <p className="flex-grow line-through overflow-ellipsis overflow-hidden 2xl:text-xl">
+                {item.task_name}
+              </p>
+              <button
+                onClick={() => handleDeleteTask(item.task_id, item.project_id)}
+                className="mr-2 bg-transparent py-2 px-6 rounded-lg transform duration-500 hover:text-red-500 2xl:text-xl"
+              >
+                Clear
+              </button>
+            </div>
+          </li>
+        ))
+    ) : (
+      <li className="text-stone-300 h-8 text-xl list-none">
+        * Here your completed tasks
+      </li>
+    );
 
-    function handleChangeCheckboxValue(event, taskId, projectId, userId) {
-        let status = "uncompleted"
-        if(event.target.checked) {
-            status = "completed"
-        }
-        updateTaskStatus(taskId, projectId, userId, status)
-            .then(() => {
-                const targetItemIndex = App.allTasks.findIndex(item => item.task_id == taskId);
-                App.allTasks[targetItemIndex].task_status = status;
-                setUpdatesCount(prev => ++prev)
-            })
-    }
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
 
-    function handleChangeInputText(event) {
-        setEnteredValue(event.target.value);
-    }
+  const handleClose = () => {
+    setOpen(false);
+  };
 
-    function handleDeleteAllCompleted(projectId) {
-        deleteAllCompletedTasks(projectId)
-            .then(() => {
-                App.allTasks = App.allTasks.filter(item => item.project_id == projectId && item.task_status == "uncompleted");
-                setUpdatesCount(prev => ++prev)
-            })
-    }
+  if (currTitle !== project_name) {
+    currTitle = project_name;
+    setEnteredValue("");
+  }
 
-    function handleDeleteTask(taskId, projectId) {
-        deleteTask(taskId, projectId)
-            .then(() => {
-                const targetItemIndex = App.allTasks.findIndex(item => item.task_id == taskId);
-                App.allTasks.splice(targetItemIndex, 1);
-                setUpdatesCount(prev => ++prev)
-            })
+  function handleAddANewTask(taskName) {
+    if (taskName) {
+      if (taskName.length > 50) {
+        handleOpen("error", "Taskname is too large!");
+        return;
+      }
+      createTask(taskName, project_id).then((data) => {
+        setTasks((prev) => [...prev, data]);
+        App.allTasks.push(data);
+      });
+      handleOpen("info", "Task has been added");
+      setEnteredValue("");
+    } else {
+      handleOpen("error", "This taskname isn't available!");
     }
-    
-    return (
-        <PageContext.Provider value={{createTask: handleAddANewTask, openState: openDialog, open: handleClickOpen, close: handleClose, deleteCompleted: handleDeleteAllCompleted}}>
-        <CustomizedSnackbars openState={snackbar} onClose={handleCloseSnackbar} />
-        <div className="md:w-10/12 lg:w-full">
+  }
+
+  function handleChangeCheckboxValue(event, taskId, projectId) {
+    let status = "uncompleted";
+    if (event.target.checked) {
+      status = "completed";
+    }
+    updateTaskStatus(taskId, projectId, status).then(() => {
+      const targetItemIndex = App.allTasks.findIndex(
+        (item) => item.task_id == taskId,
+      );
+      App.allTasks[targetItemIndex].task_status = status;
+      setUpdatesCount((prev) => ++prev);
+    });
+  }
+
+  function handleChangeInputText(event) {
+    setEnteredValue(event.target.value);
+  }
+
+  function handleDeleteAllCompleted(projectId) {
+    deleteAllCompletedTasks(projectId).then(() => {
+      App.allTasks = App.allTasks.filter(
+        (item) =>
+          item.project_id == projectId && item.task_status == "uncompleted",
+      );
+      setUpdatesCount((prev) => ++prev);
+    });
+  }
+
+  function handleDeleteTask(taskId, projectId) {
+    deleteTask(taskId, projectId).then(() => {
+      const targetItemIndex = App.allTasks.findIndex(
+        (item) => item.task_id == taskId,
+      );
+      App.allTasks.splice(targetItemIndex, 1);
+      setUpdatesCount((prev) => ++prev);
+    });
+  }
+
+  return (
+    <PageContext.Provider
+      value={{
+        createTask: handleAddANewTask,
+        openState: openDialog,
+        open: handleClickOpen,
+        close: handleClose,
+        deleteCompleted: handleDeleteAllCompleted,
+      }}
+    >
+      <CustomizedSnackbars openState={snackbar} onClose={handleCloseSnackbar} />
+      <div className="md:w-10/12 lg:w-full">
         <CreateTaskDialog />
         <div className="lg:hidden">
-            <SpeedDialTooltipOpen />
+          <SpeedDialTooltipOpen />
         </div>
         <div className="lg:hidden">
-            <IconButton sx={{position: "absolute", top: 20, right: 16}} size="large" onClick={App.deleteProject}>
-               <DeleteIcon sx={{scale: 1.5}} /> 
-            </IconButton>
+          <IconButton
+            sx={{ position: "absolute", top: 20, right: 16 }}
+            size="large"
+            onClick={App.deleteProject}
+          >
+            <DeleteIcon sx={{ scale: 1.5 }} />
+          </IconButton>
         </div>
         <section className="pt-4 pl-10 md:pl-24 lg:p-0 min-w-96 my-16 lg:my-0 lg:py-16 flex-grow flex flex-wrap h-full">
-            <div className="w-11/12 md:w-9/12 lg:w-10/12">
-                <h1 className="font-bold text-3xl md:text-4xl mb-4 overflow-ellipsis overflow-hidden">{project_name}</h1>
-                <p className="text-stone-400 text-base md:text-lg 2xl:text-xl mb-4">{new Date(project_due_date).toDateString()}</p>
-                <article className="text-base md:text-lg max-width-full">
-                    <p className="font-mono overflow-ellipsis overflow-hidden 2xl:text-xl">
-                     {project_description}
-                    </p>
-                </article>
+          <div className="w-11/12 md:w-9/12 lg:w-10/12">
+            <h1 className="font-bold text-3xl md:text-4xl mb-4 overflow-ellipsis overflow-hidden">
+              {project_name}
+            </h1>
+            <p className="text-stone-400 text-base md:text-lg 2xl:text-xl mb-4">
+              {new Date(project_due_date).toDateString()}
+            </p>
+            <article className="text-base md:text-lg max-width-full">
+              <p className="font-mono overflow-ellipsis overflow-hidden 2xl:text-xl">
+                {project_description}
+              </p>
+            </article>
+          </div>
+          <div className="hidden lg:block">
+            <button
+              onClick={onProjectDelete}
+              title="Delete this project"
+              className="bg-transparent py-2 px-6 rounded-lg mb-4 transform duration-500 hover:bg-gray-100"
+            >
+              <img src={can} alt="Trash" className="w-10 h-10" />
+            </button>
+          </div>
+          <div className="md:mt-10 w-11/12 lg:w-11/12 border-b-2 pb-5 min-h-[36rem]">
+            <h2 className="font-bold text-3xl">Tasks</h2>
+            <div className="hidden lg:flex justify-start my-4 items-center">
+              <textarea
+                value={enteredValue}
+                onChange={(event) => handleChangeInputText(event)}
+                type="text"
+                maxLength={250}
+                className="bg-gray-200 h-12 outline-none p-2 focus:border-b-2 border-gray-600 min-h-12 max-h-24 w-64 2xl:w-72 2xl:min-h-16 2xl:max-h-30 2xl:text-2xl"
+              />
+              <button
+                onClick={() => handleAddANewTask(enteredValue)}
+                className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100 2xl:text-xl"
+              >
+                Add Task
+              </button>
             </div>
-            <div className="hidden lg:block">
-                <button onClick={onProjectDelete} title="Delete this project" className="bg-transparent py-2 px-6 rounded-lg mb-4 transform duration-500 hover:bg-gray-100">
-                    <img src={can} alt="Trash" className="w-10 h-10"/>
-                </button>
+            <div className="md:flex justify-between">
+              {tasks.length === complitedCount && tasks.length != 0 ? (
+                <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2>
+              ) : (
+                <h2 className="my-4 2xl:text-xl">
+                  Completed Tasks: {complitedCount}
+                </h2>
+              )}
+              <div className="hidden lg:block">
+                <TransparentButtonComponent
+                  clickEvent={() => handleDeleteAllCompleted(project_id)}
+                >
+                  Delete completed
+                </TransparentButtonComponent>
+              </div>
             </div>
-            <div className="md:mt-10 w-11/12 lg:w-11/12 border-b-2 pb-5 min-h-[36rem]">
-                <h2 className="font-bold text-3xl">Tasks</h2>
-                <div className="hidden lg:flex justify-start my-4 items-center">
-                    <textarea value={enteredValue} onChange={(event) => handleChangeInputText(event)} type="text" maxLength={250} className="bg-gray-200 h-12 outline-none p-2 focus:border-b-2 border-gray-600 min-h-12 max-h-24 w-64 2xl:w-72 2xl:min-h-16 2xl:max-h-30 2xl:text-2xl"/>
-                    <button onClick={() => handleAddANewTask(enteredValue)} className="mx-2 bg-transparent py-2 px-6 rounded-lg hover:bg-gray-100 2xl:text-xl">Add Task</button>
-                </div>
-                <div className="md:flex justify-between">
-                    {tasks.length === complitedCount && tasks.length != 0 ? <h2 className="my-4 2xl:text-xl">All tasks are completed!</h2> : <h2 className="my-4 2xl:text-xl">Completed Tasks: {complitedCount}</h2>}
-                    <div className="hidden lg:block">
-                        <TransparentButtonComponent clickEvent={() => handleDeleteAllCompleted(project_id)}>Delete completed</TransparentButtonComponent>
-                    </div>
-                </div>
-                <div className="lg:hidden mt-8">
-                    <AccordionUsage uncomplete={unCompletedContent} complete={completedContent} />
-                </div>
-                <div className="hidden lg:flex gap-5">
-                    <div className="w-full">
-                        <h2 className="text-xl font-semibold 2xl:text-2xl">Uncomplited</h2>
-                        <ul className="rounded-md min-h-full">
-                            {unCompletedContent}
-                        </ul>
-                    </div>
-                    <div className="w-full">
-                        <h2 className="text-xl font-semibold 2xl:text-2xl">Complited</h2>
-                        <ul className="rounded-md">
-                            {completedContent}
-                        </ul>
-                    </div>
-                </div>
+            <div className="lg:hidden mt-8">
+              <AccordionUsage
+                uncomplete={unCompletedContent}
+                complete={completedContent}
+              />
             </div>
+            <div className="hidden lg:flex gap-5">
+              <div className="w-full">
+                <h2 className="text-xl font-semibold 2xl:text-2xl">
+                  Uncomplited
+                </h2>
+                <ul className="rounded-md min-h-full">{unCompletedContent}</ul>
+              </div>
+              <div className="w-full">
+                <h2 className="text-xl font-semibold 2xl:text-2xl">
+                  Complited
+                </h2>
+                <ul className="rounded-md">{completedContent}</ul>
+              </div>
+            </div>
+          </div>
         </section>
-    </div>
+      </div>
     </PageContext.Provider>
-    );
+  );
 }

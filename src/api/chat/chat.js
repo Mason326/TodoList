@@ -1,4 +1,4 @@
-import { supabase } from "../../supabase";
+import { supabase } from "../supabase/supabase-client";
 
 export async function fetchMessages() {
   try {
@@ -9,7 +9,7 @@ export async function fetchMessages() {
   }
 }
 
-export async function createMessage(messageContent, messageOwner, userId) {
+export async function createMessage(messageContent, messageOwner) {
   try {
     const { data, error } = await supabase
       .from("messages")
@@ -17,7 +17,6 @@ export async function createMessage(messageContent, messageOwner, userId) {
         {
           message_content: `${messageContent}`,
           message_owner: `${messageOwner}`,
-          user_id: `${userId}`,
         },
       ])
       .select();

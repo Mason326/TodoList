@@ -6,8 +6,8 @@ import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import gptBlackIcon from "../../../assets/chat-gpt-black.svg";
-import gptWhiteIcon from "../../../assets/chat-gpt-white.svg";
+import aiBrain from "../../../assets/aiBrain.svg";
+import aiBrainWhite from "../../../assets/aiBrainWhite.svg";
 import { CircularProgress, Dialog, IconButton, Tooltip } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
@@ -19,18 +19,54 @@ import {
   ListItemText,
   Avatar,
 } from "@mui/material";
-import { askGPT } from "../../../api/gpt/requestGPT";
+// import { askGPT } from "../../../api/gpt/requestGPT";
 import { createMessage, fetchMessages } from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
 import { AppContext } from "../../../context/AppContext";
+import { sendToAgent } from "../../../api/client/sendToAgent";
+import FadeInBox from "./components/DotComponent";
 
 export default function Recomendations({ open, onClose }) {
-  const { user } = useContext(AuthContext);
+  const { session } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputData = useRef(null);
+  const sendButtonRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const { projects, allTasks } = useContext(AppContext);
+  const messagesEndRef = useRef(null);
+  const [waitingResponse, setWaitingResponse] = useState(false);
+
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  };
+
+  const enableEnterSending = () => {
+    const input = inputData.current;
+    if (input) {
+      input.onkeypress = (event) => {
+        if (!event.shiftKey && event.key == "Enter") {
+          event.preventDefault();
+          sendButtonRef.current?.click();
+        }
+      };
+    }
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+    enableEnterSending();
+  }, [messages]);
+
+  useEffect(() => {
+    if (!loading && messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [loading, messages.length]);
 
   useEffect(() => {
     if (open) {
@@ -55,9 +91,9 @@ export default function Recomendations({ open, onClose }) {
     inputData.current.value = newVal;
   }
 
-  function handleCreateMessage(messageContent, messageOwner, userId) {
+  function handleCreateMessage(messageContent, messageOwner) {
     if (messageContent.trim().length > 0) {
-      createMessage(messageContent, messageOwner, userId)
+      createMessage(messageContent, messageOwner)
         .then(() => {
           setMessages((prev) => [
             ...prev,
@@ -70,39 +106,37 @@ export default function Recomendations({ open, onClose }) {
         })
         .then(() => {
           if (messageOwner == "user") {
-            handleAskAI(messageContent, userId);
+            handleAskAI(messageContent);
             inputData.current.value = "";
           }
         });
     }
   }
 
-  function handleAskAI(questionText, userId) {
-    setMessages((prev) => [
-      ...prev,
-      {
-        text: `${"Thinking..."}`,
-        time: new Date(),
-        sender: `ai`,
-      },
-    ]);
+  function handleAskAI(questionText) {
+    setWaitingResponse(true);
     const projectWithTasks = {};
     for (const project of projects) {
       projectWithTasks[`${project.project_name}`] = allTasks.filter(
         (item) => item.project_id == project.project_id,
       );
     }
-    askGPT(
+    sendToAgent(
       messages.slice(-6),
       JSON.stringify(projectWithTasks),
       questionText,
+      session?.access_token,
     ).then((data) => {
-      createMessage(`${data}`, "ai", userId).then(() => {
-        setMessages((prev) => {
-          const copy = [...prev];
-          copy[copy.length - 1].text = `${data}`;
-          return copy;
-        });
+      createMessage(`${data}`, "ai").then(() => {
+        setWaitingResponse(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            text: `${data}`,
+            time: new Date(),
+            sender: `ai`,
+          },
+        ]);
       });
     });
   }
@@ -203,22 +237,17 @@ export default function Recomendations({ open, onClose }) {
               }}
             >
               <Box>
-                <img
-                  srcSet={gptBlackIcon}
-                  alt="gpt"
-                  width="56px"
-                  height="56px"
-                />
+                <img srcSet={aiBrain} alt="ai" width="64px" height="64px" />
               </Box>
-              <Typography variant="h4">ChatGPT Assistant</Typography>
+              <Typography variant="h4">AI Assistant</Typography>
             </Box>
             <Typography
               color="text.secondary"
               component="div"
               sx={{ textAlign: "justify" }}
             >
-              This ChatGPT Assistant is able to provide recommendations on how
-              to complete assigned tasks in projects.
+              This AI Assistant is able to provide recommendations on how to
+              complete assigned tasks in projects.
             </Typography>
             <Box
               sx={{
@@ -229,6 +258,7 @@ export default function Recomendations({ open, onClose }) {
                 bgcolor: "#f8f9fa",
                 borderRadius: 2,
               }}
+              ref={messagesContainerRef}
             >
               {loading ? (
                 <Box
@@ -294,9 +324,9 @@ export default function Recomendations({ open, onClose }) {
                                 <PersonIcon fontSize="small" />
                               ) : (
                                 <img
-                                  srcSet={gptWhiteIcon}
-                                  alt="gpt"
-                                  style={{ width: 20, height: 20 }}
+                                  srcSet={aiBrainWhite}
+                                  alt="ai"
+                                  style={{ width: 25, height: 25 }}
                                 />
                               )}
                             </Avatar>
@@ -322,8 +352,7 @@ export default function Recomendations({ open, onClose }) {
                                 p: 1.5,
                                 borderRadius: 2,
                                 wordBreak: "break-word",
-                                textAlign:
-                                  msg.sender === "user" ? "right" : "left",
+                                textAlign: "left",
                               }}
                               primaryTypographyProps={{
                                 color: "text.primary",
@@ -332,6 +361,7 @@ export default function Recomendations({ open, onClose }) {
                               secondaryTypographyProps={{
                                 fontSize: "0.75rem",
                                 mt: 0.5,
+                                textAlign: "right",
                               }}
                             />
                           </pre>
@@ -339,6 +369,38 @@ export default function Recomendations({ open, onClose }) {
                       </ListItem>
                     </Box>
                   ))}
+                  {waitingResponse && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        marginLeft: "10px",
+                        marginBottom: "5px",
+                        width: "40px",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <FadeInBox number={1} />
+                      <FadeInBox number={2} />
+                      <FadeInBox number={3} />
+                      {/* <Box
+                        sx={{
+                          width: "10px",
+                          height: "10px",
+                          background: "red",
+                          borderRadius: "50%",
+                        }}
+                      ></Box>
+                      <Box
+                        sx={{
+                          width: "10px",
+                          height: "10px",
+                          background: "red",
+                          borderRadius: "50%",
+                        }}
+                      ></Box> */}
+                    </Box>
+                  )}
+                  <div ref={messagesEndRef} />
                 </List>
               )}
             </Box>
@@ -358,8 +420,9 @@ export default function Recomendations({ open, onClose }) {
             <IconButton
               aria-label="send"
               size="large"
+              ref={sendButtonRef}
               onClick={() =>
-                handleCreateMessage(inputData.current.value, "user", user.id)
+                handleCreateMessage(inputData.current.value, "user")
               }
             >
               <SendIcon fontSize="inherit" />

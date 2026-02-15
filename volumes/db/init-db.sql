@@ -1,6 +1,7 @@
 \c postgres
 
 CREATE TYPE public.task_status AS ENUM('completed', 'uncompleted');
+CREATE TYPE public.message_owner AS ENUM('user', 'ai');
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -16,7 +17,7 @@ create table public.projects (
   created_at timestamp with time zone not null default now(),
   project_due_date date not null,
   project_description text null,
-  user_id uuid not null default gen_random_uuid (),
+  user_id uuid not null default auth.uid (),
   constraint projects_pkey primary key (project_id)
 ) TABLESPACE pg_default;
 
@@ -25,7 +26,7 @@ create table public.tasks (
   task_name text not null,
   created_at timestamp with time zone null default now(),
   project_id uuid not null default gen_random_uuid (),
-  user_id uuid not null default gen_random_uuid (),
+  user_id uuid not null default auth.uid (),
   task_status public.task_status not null default 'uncompleted'::task_status,
   updated_at timestamp with time zone null,
   constraint tasks_pkey primary key (task_id),
@@ -36,8 +37,18 @@ create trigger update_tasks_updated_at BEFORE
 update on tasks for EACH row
 execute FUNCTION update_updated_at_column ();
 
+create table public.messages (
+  message_id uuid not null default gen_random_uuid (),
+  created_at timestamp with time zone not null default now(),
+  user_id uuid not null default auth.uid (),
+  message_content text not null,
+  message_owner public.message_owner not null default 'user'::message_owner,
+  constraint messages_pkey primary key (message_id)
+) TABLESPACE pg_default;
+
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 
 create policy "Enable users to view their own data only"
 on "public"."projects"
@@ -108,5 +119,23 @@ as PERMISSIVE
 for UPDATE
 to public
 using (
+  (select auth.uid()) = user_id
+);
+
+create policy "Enable users to view their own data only"
+on "public"."messages"
+as PERMISSIVE
+for SELECT
+to authenticated
+using (
+ (select auth.uid()) = user_id
+);
+
+create policy "Enable insert for users based on user_id"
+on "public"."messages"
+as PERMISSIVE
+for INSERT
+to public
+with check (
   (select auth.uid()) = user_id
 );
