@@ -1,5 +1,5 @@
 import { supabaseClient } from "../index";
-import { ITask, TaskStatus } from "../interfaces/interface";
+import { ITask } from "../interfaces/interface";
 
 export async function createProject(
   projectName: string,
@@ -86,7 +86,7 @@ async function createTask(
 export async function updateTaskStatusByName(
   projectName: string,
   taskName: string,
-  status: TaskStatus,
+  status: string,
 ) {
   try {
     const data = await fetchTaskIdByName(projectName, taskName).then((data) => {

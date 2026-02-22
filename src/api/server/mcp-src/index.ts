@@ -14,7 +14,6 @@ import {
   updateTaskStatusByName,
 } from "./supabase-server-tools/db";
 import { INSTRUCTIONS } from "./instructions";
-import { TaskStatus } from "./interfaces/interface";
 
 dotenv.config();
 const app = express();
@@ -72,14 +71,10 @@ const updateTaskStatusTool = tool({
     task_status: z.string().default("uncompleted"),
   }),
   async execute({ project_name, task_name, task_status }) {
-    const status =
-      task_status == "completed"
-        ? TaskStatus.completed
-        : TaskStatus.uncompleted;
     const updatedTask = await updateTaskStatusByName(
       project_name,
       task_name,
-      status,
+      task_status,
     );
     return updatedTask;
   },
