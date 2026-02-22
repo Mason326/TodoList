@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 import express, { response } from "express";
 import cors from "cors";
 import { z } from "zod";
-import { supabaseAuthMiddleware } from "../supabase/supabase-server-tools/middleware.js";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAuthMiddleware } from "./supabase-server-tools/middleware";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import {
   createProject,
   createTaskWithResolvingProjectName,
@@ -12,19 +12,19 @@ import {
   deleteProjectByName,
   deleteTaskByName,
   updateTaskStatusByName,
-} from "../supabase/supabase-server-tools/db.js";
-import { INSTRUCTIONS } from "./instructions.js";
+} from "./supabase-server-tools/db";
+import { INSTRUCTIONS } from "./instructions";
 
 dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
 const PORT = 1234;
-export let supabaseClient = null;
+export let supabaseClient: SupabaseClient | null = null;
 
 export const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_URL || "",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || "",
   {
     auth: { autoRefreshToken: false, persistSession: false },
   },
@@ -134,8 +134,13 @@ export const todolistAgent = new Agent({
 app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
   try {
     const { prevMessages = [], projectWithTasks, message } = req.body;
-    supabaseClient = req.supabaseClient;
-    const history = prevMessages.map((item) => {
+    supabaseClient = (req as any).supabaseClient;
+    const previousMessages = prevMessages as {
+      text: string;
+      time: Date;
+      sender: string;
+    }[];
+    const history = previousMessages.map((item) => {
       return item.sender == "ai" ? assistant(item.text) : user(item.text);
     });
 
@@ -146,7 +151,7 @@ app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
     ]);
 
     res.json({ response });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error:", error);
     res.status(500).json({ error: error.message });
   }
