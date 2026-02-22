@@ -174,16 +174,19 @@ export async function deleteProjectByName(projectName: string) {
     const deleteResult = await resolveProjectIdByName(projectName)
       .then((projectId) => {
         projectIdHolder = projectId;
+        console.log(projectIdHolder);
         return deleteAllTasksFromProjectByName(projectId || "");
       })
       .then(() => {
         if (!supabaseClient) return;
-        supabaseClient
+        console.log(supabaseClient);
+        return supabaseClient
           .from("projects")
           .delete()
           .eq("project_id", `${projectIdHolder}`)
           .select();
       });
+    console.log(deleteResult);
     return deleteResult;
   } catch (e) {
     throw e;

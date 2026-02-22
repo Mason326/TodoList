@@ -139,7 +139,6 @@ export const todolistAgent = new Agent({
 app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
   try {
     const { prevMessages = [], projectWithTasks, message } = req.body;
-    console.log(req);
     supabaseClient = (req as any).supabaseClient;
     const previousMessages = prevMessages as {
       text: string;
