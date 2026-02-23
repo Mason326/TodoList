@@ -14,6 +14,7 @@ import {
   updateTaskStatusByName,
 } from "./supabase-server-tools/db";
 import { INSTRUCTIONS } from "./instructions";
+import { OpenAIAgentHelper } from "./mcp/ai/connector/openai";
 
 dotenv.config();
 const app = express();
@@ -117,38 +118,45 @@ const deleteProjectTool = tool({
   },
 });
 
-export const todolistAgent = new Agent({
-  name: "TodoList Agent",
-  model: "gpt-4.1",
-  tools: [
-    createProjectTool,
-    createTaskTool,
-    updateTaskStatusTool,
-    deleteTaskTool,
-    deleteAllCompletedTasksTool,
-    deleteProjectTool,
-  ],
-  instructions: INSTRUCTIONS,
-});
+// export const todolistAgent = new Agent({
+//   name: "TodoList Agent",
+//   model: "gpt-4.1",
+//   tools: [
+//     createProjectTool,
+//     createTaskTool,
+//     updateTaskStatusTool,
+//     deleteTaskTool,
+//     deleteAllCompletedTasksTool,
+//     deleteProjectTool,
+//   ],
+//   instructions: INSTRUCTIONS,
+// });
+
+export const todolistAgent = new OpenAIAgentHelper(
+  "TodoAgent",
+  "gpt-4",
+  INSTRUCTIONS,
+);
+todolistAgent.init();
 
 app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
   try {
-    const { prevMessages = [], projectWithTasks, message } = req.body;
-    supabaseClient = (req as any).supabaseClient;
-    const previousMessages = prevMessages as {
-      text: string;
-      time: Date;
-      sender: string;
-    }[];
-    const history = previousMessages.map((item) => {
-      return item.sender == "ai" ? assistant(item.text) : user(item.text);
-    });
+    // const { prevMessages = [], projectWithTasks, message } = req.body;
+    // supabaseClient = (req as any).supabaseClient;
+    // const previousMessages = prevMessages as {
+    //   text: string;
+    //   time: Date;
+    //   sender: string;
+    // }[];
+    // const history = previousMessages.map((item) => {
+    //   return item.sender == "ai" ? assistant(item.text) : user(item.text);
+    // });
 
-    const response = await run(todolistAgent, [
-      user(`${projectWithTasks}`),
-      ...history,
-      user(`${message}`),
-    ]);
+    // const response = await run(todolistAgent, [
+    //   user(`${projectWithTasks}`),
+    //   ...history,
+    //   user(`${message}`),
+    // ]);
 
     res.json({ response });
   } catch (error: any) {

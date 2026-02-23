@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@openai/agents": "^0.4.5",
     "@supabase/supabase-js": "^2.95.3",
     "cors": "^2.8.6",
