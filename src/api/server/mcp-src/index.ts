@@ -9,25 +9,19 @@ import {
 import dotenv from "dotenv";
 import express, { response } from "express";
 import cors from "cors";
-import { z } from "zod";
 import { supabaseAuthMiddleware } from "./supabase-server-tools/middleware";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import {
-  createProject,
-  createTaskWithResolvingProjectName,
-  deleteAllCompletedTasks,
-  deleteProjectByName,
-  deleteTaskByName,
-  updateTaskStatusByName,
-} from "./supabase-server-tools/db";
 import { INSTRUCTIONS } from "./instructions";
+import { log } from "./mcp";
+import { Request } from "express-serve-static-core";
+import QueryString from "qs";
 
 dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
 const PORT = 1234;
-export let supabaseClient: SupabaseClient | null = null;
+export let token: string = "";
 
 export const supabaseAdmin = createClient(
   process.env.SUPABASE_URL || "",
@@ -37,97 +31,15 @@ export const supabaseAdmin = createClient(
   },
 );
 
-const createProjectTool = tool({
-  name: "create_project",
-  description: "Create a project with a given name, due date and description",
-  parameters: z.object({
-    project_name: z.string(),
-    due_date: z.iso.date().default(new Date().toISOString().split("T")[0]),
-    project_description: z.string().default(""),
-  }),
-  async execute({ project_name, due_date, project_description }) {
-    createProject(project_name, due_date, project_description).then((data) => {
-      return data;
-    });
-  },
-});
-
-const createTaskTool = tool({
-  name: "create_task",
-  description: "Creates a task in a project with a given name",
-  parameters: z.object({
-    task_name: z.string(),
-    project_name: z.string(),
-  }),
-  async execute({ task_name, project_name }) {
-    const createdTask = await createTaskWithResolvingProjectName(
-      task_name,
-      project_name,
-    );
-    return createdTask;
-  },
-});
-
-const updateTaskStatusTool = tool({
-  name: "update_task_status",
-  description:
-    "Updates task status with a given name in a project with a given name",
-  parameters: z.object({
-    project_name: z.string(),
-    task_name: z.string(),
-    task_status: z.string().default("uncompleted"),
-  }),
-  async execute({ project_name, task_name, task_status }) {
-    const updatedTask = await updateTaskStatusByName(
-      project_name,
-      task_name,
-      task_status,
-    );
-    return updatedTask;
-  },
-});
-
-const deleteTaskTool = tool({
-  name: "delete_task",
-  description: "Deletes task with a given name in a project with a given name",
-  parameters: z.object({
-    task_name: z.string(),
-    project_name: z.string(),
-  }),
-  async execute({ task_name, project_name }) {
-    const deletedTask = await deleteTaskByName(project_name, task_name);
-    return deletedTask;
-  },
-});
-
-const deleteAllCompletedTasksTool = tool({
-  name: "delete_all_completed_tasks",
-  description: "Deletes all completed tasks in a project with a given name",
-  parameters: z.object({
-    project_name: z.string(),
-  }),
-  async execute({ project_name }) {
-    const deletedTasks = await deleteAllCompletedTasks(project_name);
-    return deletedTasks;
-  },
-});
-
-const deleteProjectTool = tool({
-  name: "delete_project",
-  description: "Deletes project with a given name",
-  parameters: z.object({
-    project_name: z.string(),
-  }),
-  async execute({ project_name }) {
-    const deletedProject = await deleteProjectByName(project_name);
-    return deletedProject;
-  },
-});
-
-async function main(request: any) {
+async function main(
+  request: Request<{}, any, any, QueryString.ParsedQs, Record<string, any>>,
+) {
+  console.log(request);
+  const { prevMessages = [], projectWithTasks, message } = request.body;
+  token = (request as any).accessToken;
   const mcpServer = new MCPServerStdio({
     name: "Filesystem MCP Server, via npx",
-    fullCommand: `node ./dist/mcp/index.js`,
+    fullCommand: `node ./dist/mcp/index.js --token ${token}`,
   });
 
   console.log("Connecting to MCP server...");
@@ -138,20 +50,10 @@ async function main(request: any) {
     const todolistAgent = new Agent({
       name: "TodoList Agent",
       model: "gpt-4.1",
-      // tools: [
-      //   createProjectTool,
-      //   createTaskTool,
-      //   updateTaskStatusTool,
-      //   deleteTaskTool,
-      //   deleteAllCompletedTasksTool,
-      //   deleteProjectTool,
-      // ],
       instructions: INSTRUCTIONS,
       mcpServers: [mcpServer],
     });
 
-    const { prevMessages = [], projectWithTasks, message } = request.body;
-    supabaseClient = (request as any).supabaseClient;
     const previousMessages = prevMessages as {
       text: string;
       time: Date;
@@ -171,13 +73,6 @@ async function main(request: any) {
   }
   return response;
 }
-
-// export const todolistAgent = new OpenAIAgentHelper(
-//   "TodoAgent",
-//   "gpt-4",
-//   INSTRUCTIONS,
-// );
-// todolistAgent.init();
 
 app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
   try {

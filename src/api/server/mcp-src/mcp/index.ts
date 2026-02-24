@@ -9,16 +9,25 @@ import {
   deleteTaskByName,
   updateTaskStatusByName,
 } from "../supabase-server-tools/db";
+import dotenv from "dotenv";
 import fs from "fs";
+import { createUserClient } from "../supabase-server-tools/userManagement";
+
+dotenv.config();
 
 const logFile = fs.createWriteStream("/tmp/mcp-server.log", { flags: "a" });
 
-function log(message: string, data?: any) {
+export function log(message: string, data?: any) {
   const timestamp = new Date().toISOString();
   const logMessage = `[${timestamp}] ${message} ${data ? JSON.stringify(data, null, 2) : ""}\n`;
   console.error(logMessage); // В stderr
   logFile.write(logMessage);
 }
+
+const args = process.argv.slice(2);
+const accessToken = args[args.indexOf("--token") + 1];
+
+export const supabaseClient = createUserClient(accessToken);
 
 const server = new McpServer({
   name: "demo-server",
@@ -44,6 +53,10 @@ server.registerTool(
     }),
   },
   async ({ project_name, due_date, project_description }) => {
+    log(
+      "create_project called",
+      JSON.stringify({ project_name, due_date, project_description }),
+    );
     const projectInfo = createProject(
       project_name,
       due_date,
@@ -51,6 +64,7 @@ server.registerTool(
     ).then((data) => {
       return data;
     });
+    log("create_project called", JSON.stringify(projectInfo));
     return {
       content: [
         {

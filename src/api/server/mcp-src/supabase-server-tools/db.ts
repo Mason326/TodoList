@@ -1,5 +1,6 @@
-import { supabaseClient } from "../index";
-import { ITask } from "../interfaces/interface";
+import { supabaseClient } from "../mcp";
+import { ITask } from "../interfaces/interface.js";
+import { log } from "../mcp";
 
 export async function createProject(
   projectName: string,
@@ -24,10 +25,11 @@ export async function createProject(
       ])
       .select()
       .single();
-    console.log(data);
+    log("create_project data result", JSON.stringify(data));
     return data;
   } catch (e) {
     console.error("Error:", e);
+    log("create_project error", JSON.stringify(e));
   }
 }
 

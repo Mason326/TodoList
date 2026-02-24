@@ -18,8 +18,7 @@ export async function supabaseAuthMiddleware(req: any, res: any, next: any) {
       return res.status(401).json({ error: "Invalid token" });
     }
 
-    req.supabaseClient = createUserClient(token);
-    req.user = user;
+    req.accessToken = token;
 
     next();
   } catch (error) {
