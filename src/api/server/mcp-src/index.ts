@@ -1,4 +1,11 @@
-import { Agent, tool, run, user, assistant } from "@openai/agents";
+import {
+  Agent,
+  tool,
+  run,
+  user,
+  assistant,
+  MCPServerStdio,
+} from "@openai/agents";
 import dotenv from "dotenv";
 import express, { response } from "express";
 import cors from "cors";
@@ -14,7 +21,6 @@ import {
   updateTaskStatusByName,
 } from "./supabase-server-tools/db";
 import { INSTRUCTIONS } from "./instructions";
-import { OpenAIAgentHelper } from "./mcp/ai/connector/openai";
 
 dotenv.config();
 const app = express();
@@ -118,46 +124,64 @@ const deleteProjectTool = tool({
   },
 });
 
-// export const todolistAgent = new Agent({
-//   name: "TodoList Agent",
-//   model: "gpt-4.1",
-//   tools: [
-//     createProjectTool,
-//     createTaskTool,
-//     updateTaskStatusTool,
-//     deleteTaskTool,
-//     deleteAllCompletedTasksTool,
-//     deleteProjectTool,
-//   ],
-//   instructions: INSTRUCTIONS,
-// });
+async function main(request: any) {
+  const mcpServer = new MCPServerStdio({
+    name: "Filesystem MCP Server, via npx",
+    fullCommand: `node ./dist/mcp/index.js`,
+  });
 
-export const todolistAgent = new OpenAIAgentHelper(
-  "TodoAgent",
-  "gpt-4",
-  INSTRUCTIONS,
-);
-todolistAgent.init();
+  console.log("Connecting to MCP server...");
+  await mcpServer.connect();
+  console.log("MCP server connected successfully");
+  let response = null;
+  try {
+    const todolistAgent = new Agent({
+      name: "TodoList Agent",
+      model: "gpt-4.1",
+      // tools: [
+      //   createProjectTool,
+      //   createTaskTool,
+      //   updateTaskStatusTool,
+      //   deleteTaskTool,
+      //   deleteAllCompletedTasksTool,
+      //   deleteProjectTool,
+      // ],
+      instructions: INSTRUCTIONS,
+      mcpServers: [mcpServer],
+    });
+
+    const { prevMessages = [], projectWithTasks, message } = request.body;
+    supabaseClient = (request as any).supabaseClient;
+    const previousMessages = prevMessages as {
+      text: string;
+      time: Date;
+      sender: string;
+    }[];
+    const history = previousMessages.map((item) => {
+      return item.sender == "ai" ? assistant(item.text) : user(item.text);
+    });
+
+    response = await run(todolistAgent, [
+      user(`${projectWithTasks}`),
+      ...history,
+      user(`${message}`),
+    ]);
+  } finally {
+    await mcpServer.close();
+  }
+  return response;
+}
+
+// export const todolistAgent = new OpenAIAgentHelper(
+//   "TodoAgent",
+//   "gpt-4",
+//   INSTRUCTIONS,
+// );
+// todolistAgent.init();
 
 app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
   try {
-    // const { prevMessages = [], projectWithTasks, message } = req.body;
-    // supabaseClient = (req as any).supabaseClient;
-    // const previousMessages = prevMessages as {
-    //   text: string;
-    //   time: Date;
-    //   sender: string;
-    // }[];
-    // const history = previousMessages.map((item) => {
-    //   return item.sender == "ai" ? assistant(item.text) : user(item.text);
-    // });
-
-    // const response = await run(todolistAgent, [
-    //   user(`${projectWithTasks}`),
-    //   ...history,
-    //   user(`${message}`),
-    // ]);
-
+    const response = await main(req);
     res.json({ response });
   } catch (error: any) {
     console.error("Error:", error);

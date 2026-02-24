@@ -9,11 +9,28 @@ import {
   deleteTaskByName,
   updateTaskStatusByName,
 } from "../supabase-server-tools/db";
+import fs from "fs";
+
+const logFile = fs.createWriteStream("/tmp/mcp-server.log", { flags: "a" });
+
+function log(message: string, data?: any) {
+  const timestamp = new Date().toISOString();
+  const logMessage = `[${timestamp}] ${message} ${data ? JSON.stringify(data, null, 2) : ""}\n`;
+  console.error(logMessage); // В stderr
+  logFile.write(logMessage);
+}
 
 const server = new McpServer({
   name: "demo-server",
   version: "1.0.0",
 });
+
+server.server.onerror = (error) => {
+  log("Server error:", error);
+};
+
+// Логируем регистрацию инструментов
+log("Registering tools...");
 
 server.registerTool(
   "create_project",
@@ -56,10 +73,12 @@ server.registerTool(
     }),
   },
   async ({ task_name, project_name }) => {
+    log("create_task called", JSON.stringify({ task_name, project_name }));
     const createdTask = await createTaskWithResolvingProjectName(
       task_name,
       project_name,
     );
+    log("create_task called", JSON.stringify(createdTask));
     return {
       content: [
         {
@@ -170,3 +189,4 @@ server.registerTool(
 
 const transport = new StdioServerTransport();
 server.connect(transport);
+log("MCP Server connected and ready");
