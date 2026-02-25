@@ -174,9 +174,11 @@ function TodoList() {
               />
             ) : pageVisibility !== -1 ? (
               <PageComponent
-                neededObj={createdProjects.findLast(
-                  (elem) => elem.project_id == pageVisibility,
-                )}
+                neededObj={
+                  createdProjects.findLast(
+                    (elem) => elem.project_id == pageVisibility,
+                  ) ?? setPageVisibility(-1)
+                }
                 onProjectDelete={handleShowModal}
               />
             ) : (
@@ -189,7 +191,7 @@ function TodoList() {
                 projectTitle={
                   createdProjects.findLast(
                     (elem) => elem.project_id == pageVisibility,
-                  ).project_name
+                  )?.project_name ?? setPageVisibility(-1)
                 }
               />
             )}

@@ -10,18 +10,14 @@ import {
   updateTaskStatusByName,
 } from "../supabase-server-tools/db";
 import dotenv from "dotenv";
-import fs from "fs";
 import { createUserClient } from "../supabase-server-tools/userManagement";
 
 dotenv.config();
 
-const logFile = fs.createWriteStream("/tmp/mcp-server.log", { flags: "a" });
-
 export function log(message: string, data?: any) {
   const timestamp = new Date().toISOString();
   const logMessage = `[${timestamp}] ${message} ${data ? JSON.stringify(data, null, 2) : ""}\n`;
-  console.error(logMessage); // В stderr
-  logFile.write(logMessage);
+  console.error(logMessage);
 }
 
 const args = process.argv.slice(2);
@@ -38,7 +34,6 @@ server.server.onerror = (error) => {
   log("Server error:", error);
 };
 
-// Логируем регистрацию инструментов
 log("Registering tools...");
 
 server.registerTool(
@@ -54,7 +49,7 @@ server.registerTool(
   },
   async ({ project_name, due_date, project_description }) => {
     log(
-      "create_project called",
+      "create_project called with arguments",
       JSON.stringify({ project_name, due_date, project_description }),
     );
     const projectInfo = createProject(
@@ -64,7 +59,7 @@ server.registerTool(
     ).then((data) => {
       return data;
     });
-    log("create_project called", JSON.stringify(projectInfo));
+    log("create_project result ", JSON.stringify(projectInfo));
     return {
       content: [
         {
@@ -87,12 +82,15 @@ server.registerTool(
     }),
   },
   async ({ task_name, project_name }) => {
-    log("create_task called", JSON.stringify({ task_name, project_name }));
+    log(
+      "create_task called with arguments",
+      JSON.stringify({ task_name, project_name }),
+    );
     const createdTask = await createTaskWithResolvingProjectName(
       task_name,
       project_name,
     );
-    log("create_task called", JSON.stringify(createdTask));
+    log("create_task result", JSON.stringify(createdTask));
     return {
       content: [
         {
@@ -117,11 +115,16 @@ server.registerTool(
     }),
   },
   async ({ project_name, task_name, task_status }) => {
+    log(
+      "update_task_status called with arguments",
+      JSON.stringify({ project_name, task_name, task_status }),
+    );
     const updatedTask = await updateTaskStatusByName(
       project_name,
       task_name,
       task_status,
     );
+    log("update_task_status result", JSON.stringify(updatedTask));
     return {
       content: [
         {
@@ -145,7 +148,12 @@ server.registerTool(
     }),
   },
   async ({ task_name, project_name }) => {
+    log(
+      "delete_task called with arguments",
+      JSON.stringify({ task_name, project_name }),
+    );
     const deletedTask = await deleteTaskByName(project_name, task_name);
+    log("delete_task result", JSON.stringify(deletedTask));
     return {
       content: [
         {
@@ -167,7 +175,12 @@ server.registerTool(
     }),
   },
   async ({ project_name }) => {
+    log(
+      "delete_all_completed_tasks called with arguments",
+      JSON.stringify({ project_name }),
+    );
     const deletedTasks = await deleteAllCompletedTasks(project_name);
+    log("delete_all_completed_tasks result", JSON.stringify(deletedTasks));
     return {
       content: [
         {
@@ -189,7 +202,12 @@ server.registerTool(
     }),
   },
   async ({ project_name }) => {
+    log(
+      "delete_project called with arguments",
+      JSON.stringify({ project_name }),
+    );
     const deletedProject = await deleteProjectByName(project_name);
+    log("delete_project result", JSON.stringify(deletedProject));
     return {
       content: [
         {

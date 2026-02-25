@@ -188,7 +188,6 @@ export async function deleteProjectByName(projectName: string) {
           .eq("project_id", `${projectIdHolder}`)
           .select();
       });
-    console.log(deleteResult);
     return deleteResult;
   } catch (e) {
     throw e;

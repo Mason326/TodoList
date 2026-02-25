@@ -1,18 +1,10 @@
-import {
-  Agent,
-  tool,
-  run,
-  user,
-  assistant,
-  MCPServerStdio,
-} from "@openai/agents";
+import { Agent, run, user, assistant, MCPServerStdio } from "@openai/agents";
 import dotenv from "dotenv";
-import express, { response } from "express";
+import express from "express";
 import cors from "cors";
 import { supabaseAuthMiddleware } from "./supabase-server-tools/middleware";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import { INSTRUCTIONS } from "./instructions";
-import { log } from "./mcp";
 import { Request } from "express-serve-static-core";
 import QueryString from "qs";
 
@@ -34,11 +26,10 @@ export const supabaseAdmin = createClient(
 async function main(
   request: Request<{}, any, any, QueryString.ParsedQs, Record<string, any>>,
 ) {
-  console.log(request);
   const { prevMessages = [], projectWithTasks, message } = request.body;
   token = (request as any).accessToken;
   const mcpServer = new MCPServerStdio({
-    name: "Filesystem MCP Server, via npx",
+    name: "MCP server for supabase actions",
     fullCommand: `node ./dist/mcp/index.js --token ${token}`,
   });
 
