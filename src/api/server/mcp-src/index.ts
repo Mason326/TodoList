@@ -43,7 +43,6 @@ async function main(
         "Content-Type": "application/json",
       },
     },
-    // fullCommand: `node ./dist/mcp/index.js --token ${token}`,
   });
 
   console.log("Connecting to MCP server...");
