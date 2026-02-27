@@ -8,9 +8,9 @@ import {
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
-import { supabaseAuthMiddleware } from "./supabase-server-tools/middleware";
+import { supabaseAuthMiddleware } from "./supabase-auth-middleware/middleware.js";
 import { createClient } from "@supabase/supabase-js";
-import { INSTRUCTIONS } from "./instructions";
+import { INSTRUCTIONS } from "./instructions.js";
 import { Request } from "express-serve-static-core";
 import QueryString from "qs";
 

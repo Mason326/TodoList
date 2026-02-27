@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node dist/agent/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "mcp": "node dist/mcp/index.js",
+    "mcp": "node dist/mcp-server/index.js",
     "mcp-inspector": "mcp-inspector npm run mcp",
     "build": "tsc"
   },

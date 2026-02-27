@@ -1,6 +1,6 @@
-import { supabaseClient } from "../mcp";
+import { supabaseClient } from "../index.js";
 import { ITask } from "../interfaces/interface.js";
-import { log } from "../mcp";
+import { log } from "../index.js";
 
 export async function createProject(
   projectName: string,

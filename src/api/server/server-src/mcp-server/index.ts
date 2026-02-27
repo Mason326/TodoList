@@ -8,13 +8,13 @@ import {
   deleteProjectByName,
   deleteTaskByName,
   updateTaskStatusByName,
-} from "../supabase-server-tools/db.js";
+} from "./supabase-server-tools/db.js";
 import dotenv from "dotenv";
 import express from "express";
 import { randomUUID } from "node:crypto";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import cors from "cors";
-import { createUserClient } from "../supabase-server-tools/userManagement.js";
+import { createUserClient } from "./supabase-server-tools/userManagement.js";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 dotenv.config({ path: "../../.env" });
