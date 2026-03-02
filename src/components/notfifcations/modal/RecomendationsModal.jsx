@@ -4,7 +4,6 @@ import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import aiBrain from "../../../assets/aiBrain.svg";
 import aiBrainWhite from "../../../assets/aiBrainWhite.svg";
@@ -14,18 +13,23 @@ import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 import {
   List,
+  Paper,
+  Button,
   ListItem,
-  ListItemAvatar,
+  ListItemIcon,
   ListItemText,
+  ListItemAvatar,
   Avatar,
 } from "@mui/material";
-// import { askGPT } from "../../../api/gpt/requestGPT";
 import { createMessage, fetchMessages } from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
 import { AppContext } from "../../../context/AppContext";
 import { sendToAgent } from "../../../api/client/sendToAgent";
 import FadeInBox from "./components/DotComponent";
+import { useDropzone } from "react-dropzone";
+import { motion, AnimatePresence } from "framer-motion";
+import { DragOverlay } from "./components/DragOverlay";
 
 export default function Recomendations({ open, onClose }) {
   const { session } = useContext(AuthContext);
@@ -382,22 +386,6 @@ export default function Recomendations({ open, onClose }) {
                       <FadeInBox number={1} />
                       <FadeInBox number={2} />
                       <FadeInBox number={3} />
-                      {/* <Box
-                        sx={{
-                          width: "10px",
-                          height: "10px",
-                          background: "red",
-                          borderRadius: "50%",
-                        }}
-                      ></Box>
-                      <Box
-                        sx={{
-                          width: "10px",
-                          height: "10px",
-                          background: "red",
-                          borderRadius: "50%",
-                        }}
-                      ></Box> */}
                     </Box>
                   )}
                   <div ref={messagesEndRef} />
@@ -406,6 +394,7 @@ export default function Recomendations({ open, onClose }) {
             </Box>
           </Stack>
         </CardContent>
+        <DragOverlay />
         <CardActions
           sx={{ display: "flex", justifyContent: "space-between", p: 2 }}
         >
