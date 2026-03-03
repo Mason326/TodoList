@@ -33,6 +33,7 @@ import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
 import { DragOverlay } from "./components/DragOverlay";
 import { createContext } from "react";
+import { uploadFile } from "../../../api/supabase/supabase-utils/db";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -47,17 +48,15 @@ const VisuallyHiddenInput = styled("input")({
 });
 
 export const RecomendationsContext = createContext();
-const maxFilesCount = 5;
 
 export default function Recomendations({ open, onClose }) {
   const [files, setFiles] = useState([]);
   const [previewDisplay, setPreviewDisplay] = useState(true);
-  const { session } = useContext(AuthContext);
+  const { user, session } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputData = useRef(null);
   const sendButtonRef = useRef(null);
-  const uploadButtonRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const { projects, allTasks } = useContext(AppContext);
   const messagesEndRef = useRef(null);
@@ -109,6 +108,8 @@ export default function Recomendations({ open, onClose }) {
         );
         setLoading(false);
       });
+    } else {
+      setFiles([]);
     }
   }, [open]);
 
@@ -130,11 +131,18 @@ export default function Recomendations({ open, onClose }) {
           ]);
         })
         .then(() => {
+          files.forEach((value) => {
+            uploadFile(user.id, value);
+            console.log(`${value} uploaded`);
+          });
+        })
+        .then(() => {
           if (messageOwner == "user") {
             handleAskAI(messageContent);
             inputData.current.value = "";
           }
         });
+      setFiles([]);
     }
   }
 
@@ -248,7 +256,6 @@ export default function Recomendations({ open, onClose }) {
         setFiles,
         previewDisplay,
         setPreviewDisplay,
-        maxFilesCount,
       }}
     >
       <Dialog
@@ -450,7 +457,6 @@ export default function Recomendations({ open, onClose }) {
                 <VisuallyHiddenInput
                   type="file"
                   onChange={(event) => {
-                    if (files.length + 1 > maxFilesCount) return;
                     setFiles((prev) => {
                       const uploadedFiles = event.target.files;
                       const newFiles = [];
@@ -463,6 +469,7 @@ export default function Recomendations({ open, onClose }) {
                         );
                         newFiles.push(fileWithPreview);
                       }
+                      // uploadFile(user.id, uploadedFiles);
                       return [...prev, ...newFiles];
                     });
                   }}

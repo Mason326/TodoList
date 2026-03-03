@@ -44,8 +44,9 @@ const img = {
 };
 
 export function DragOverlay() {
-  const { files, setFiles, previewDisplay, setPreviewDisplay, maxFilesCount } =
-    useContext(RecomendationsContext);
+  const { files, setFiles, previewDisplay, setPreviewDisplay } = useContext(
+    RecomendationsContext,
+  );
   const {
     getRootProps,
     getInputProps,
@@ -56,7 +57,6 @@ export function DragOverlay() {
     acceptedFiles,
   } = useDropzone({
     onDrop: (acceptedFiles) => {
-      if (files.length + 1 > maxFilesCount) return;
       setFiles((prev) => {
         const newFiles = acceptedFiles.map((file) =>
           Object.assign(file, {
@@ -183,10 +183,6 @@ export function DragOverlay() {
           {!isDragGlobal && !isDragActive && (
             <>
               <p>Drag 'n' drop images here</p>
-              <em>
-                ({maxFilesCount} files are the maximum number of files you can
-                drop here)
-              </em>
             </>
           )}
         </div>

@@ -1,5 +1,7 @@
 import { supabase } from "../supabase-client/index.js";
 
+const FILE_BUCKET_NAME = "ChatFilesBucket";
+
 export default async function fetchData() {
   try {
     let { data: projects, error } = await supabase.from("projects").select("*");
@@ -19,6 +21,27 @@ export async function fetchTasks(project_id) {
   } catch (e) {
     throw e;
   }
+}
+
+export async function uploadFile(userId, file) {
+  const fileByParts = file.name.split(".");
+  let fileName = "";
+  let fileExtension = "";
+  if (fileByParts.length >= 2) {
+    fileExtension = fileByParts[fileByParts.length - 1];
+    fileName = fileByParts.splice(0, fileByParts.length - 1).join("");
+  } else {
+    fileName = file.name;
+  }
+  const { data, error } = await supabase.storage
+    .from(FILE_BUCKET_NAME)
+    .upload(
+      `${userId}/upload/${fileName}_${Date.now().toString()}_${Math.ceil(Math.random() * 100000)}.${fileExtension}`,
+      file,
+    );
+  if (error) throw error;
+
+  return data;
 }
 
 export async function fetchAllTasks() {
