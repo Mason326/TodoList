@@ -10,7 +10,9 @@ import aiBrainWhite from "../../../assets/aiBrainWhite.svg";
 import { CircularProgress, Dialog, IconButton, Tooltip } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
+import UploadIcon from "@mui/icons-material/Upload";
 import PersonIcon from "@mui/icons-material/Person";
+import { styled } from "@mui/material/styles";
 import {
   List,
   Paper,
@@ -30,13 +32,32 @@ import FadeInBox from "./components/DotComponent";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
 import { DragOverlay } from "./components/DragOverlay";
+import { createContext } from "react";
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
+
+export const RecomendationsContext = createContext();
+const maxFilesCount = 5;
 
 export default function Recomendations({ open, onClose }) {
+  const [files, setFiles] = useState([]);
+  const [previewDisplay, setPreviewDisplay] = useState(true);
   const { session } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputData = useRef(null);
   const sendButtonRef = useRef(null);
+  const uploadButtonRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const { projects, allTasks } = useContext(AppContext);
   const messagesEndRef = useRef(null);
@@ -221,211 +242,257 @@ export default function Recomendations({ open, onClose }) {
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-      fullWidth
-      maxWidth="md"
+    <RecomendationsContext.Provider
+      value={{
+        files,
+        setFiles,
+        previewDisplay,
+        setPreviewDisplay,
+        maxFilesCount,
+      }}
     >
-      <Card variant="outlined">
-        <CardContent sx={{ p: 2 }}>
-          <Stack sx={{ width: "100%", textAlign: "center" }} spacing={2}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 1.5,
-              }}
-            >
-              <Box>
-                <img srcSet={aiBrain} alt="ai" width="64px" height="64px" />
-              </Box>
-              <Typography variant="h4">AI Assistant</Typography>
-            </Box>
-            <Typography
-              color="text.secondary"
-              component="div"
-              sx={{ textAlign: "justify" }}
-            >
-              This AI Assistant is able to provide recommendations on how to
-              complete assigned tasks in projects.
-            </Typography>
-            <Box
-              sx={{
-                height: 300,
-                overflow: "auto",
-                mb: 2,
-                p: 2,
-                bgcolor: "#f8f9fa",
-                borderRadius: 2,
-              }}
-              ref={messagesContainerRef}
-            >
-              {loading ? (
-                <Box
-                  sx={{
-                    height: "100%",
-                    alignContent: "center",
-                  }}
-                >
-                  <Stack spacing={2} alignItems="center">
-                    <CircularProgress
-                      color="inherit"
-                      sx={{ margin: "auto" }}
-                      size={40}
-                    />
-                    <Typography color="text.secondary" sx={{ fontSize: 14 }}>
-                      Loading your chat... Please wait!
-                    </Typography>
-                  </Stack>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        fullWidth
+        maxWidth="md"
+      >
+        <Card variant="outlined">
+          <CardContent sx={{ p: 2 }}>
+            <Stack sx={{ width: "100%", textAlign: "center" }} spacing={2}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 1.5,
+                }}
+              >
+                <Box>
+                  <img srcSet={aiBrain} alt="ai" width="64px" height="64px" />
                 </Box>
-              ) : (
-                <List sx={{ width: "100" }}>
-                  {messages.map((msg, index) => (
-                    <Box key={index}>
-                      {placeDateIfNeeded(index)}
-                      <ListItem
-                        key={index}
-                        sx={{
-                          display: "flex",
-                          justifyContent:
-                            msg.sender === "user" ? "flex-end" : "flex-start",
-                          alignItems: "flex-start",
-                          width: "100%",
-                          px: 0,
-                        }}
-                      >
-                        <Box
+                <Typography variant="h4">AI Assistant</Typography>
+              </Box>
+              <Typography
+                color="text.secondary"
+                component="div"
+                sx={{ textAlign: "justify" }}
+              >
+                This AI Assistant is able to provide recommendations on how to
+                complete assigned tasks in projects.
+              </Typography>
+              <Box
+                sx={{
+                  height: 300,
+                  overflow: "auto",
+                  mb: 2,
+                  p: 2,
+                  bgcolor: "#f8f9fa",
+                  borderRadius: 2,
+                }}
+                ref={messagesContainerRef}
+              >
+                {loading ? (
+                  <Box
+                    sx={{
+                      height: "100%",
+                      alignContent: "center",
+                    }}
+                  >
+                    <Stack spacing={2} alignItems="center">
+                      <CircularProgress
+                        color="inherit"
+                        sx={{ margin: "auto" }}
+                        size={40}
+                      />
+                      <Typography color="text.secondary" sx={{ fontSize: 14 }}>
+                        Loading your chat... Please wait!
+                      </Typography>
+                    </Stack>
+                  </Box>
+                ) : (
+                  <List sx={{ width: "100" }}>
+                    {messages.map((msg, index) => (
+                      <Box key={index}>
+                        {placeDateIfNeeded(index)}
+                        <ListItem
+                          key={index}
                           sx={{
                             display: "flex",
-                            flexDirection:
-                              msg.sender === "user" ? "row-reverse" : "row",
+                            justifyContent:
+                              msg.sender === "user" ? "flex-end" : "flex-start",
                             alignItems: "flex-start",
-                            maxWidth: "80%",
+                            width: "100%",
+                            px: 0,
                           }}
                         >
-                          <ListItemAvatar
+                          <Box
                             sx={{
-                              minWidth: "auto",
-                              mr: msg.sender === "user" ? 0 : 1,
-                              ml: msg.sender === "user" ? 1 : 0,
+                              display: "flex",
+                              flexDirection:
+                                msg.sender === "user" ? "row-reverse" : "row",
+                              alignItems: "flex-start",
+                              maxWidth: "80%",
                             }}
                           >
-                            <Avatar
+                            <ListItemAvatar
                               sx={{
-                                bgcolor:
-                                  msg.sender === "user"
-                                    ? "primary.main"
-                                    : "black",
-                                width: 36,
-                                height: 36,
+                                minWidth: "auto",
+                                mr: msg.sender === "user" ? 0 : 1,
+                                ml: msg.sender === "user" ? 1 : 0,
                               }}
                             >
-                              {msg.sender === "user" ? (
-                                <PersonIcon fontSize="small" />
-                              ) : (
-                                <img
-                                  srcSet={aiBrainWhite}
-                                  alt="ai"
-                                  style={{ width: 25, height: 25 }}
-                                />
-                              )}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <pre
-                            style={{
-                              margin: 0,
-                              whiteSpace: "pre-wrap",
-                              wordBreak: "break-word",
-                              maxWidth: "100%",
-                              overflowWrap: "break-word",
-                            }}
-                          >
-                            <ListItemText
-                              primary={msg.text}
-                              secondary={msg.time.toLocaleTimeString("ru-RU", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                              sx={{
-                                bgcolor:
-                                  msg.sender === "user" ? "#e3f2fd" : "#f5f5f5",
-                                p: 1.5,
-                                borderRadius: 2,
+                              <Avatar
+                                sx={{
+                                  bgcolor:
+                                    msg.sender === "user"
+                                      ? "primary.main"
+                                      : "black",
+                                  width: 36,
+                                  height: 36,
+                                }}
+                              >
+                                {msg.sender === "user" ? (
+                                  <PersonIcon fontSize="small" />
+                                ) : (
+                                  <img
+                                    srcSet={aiBrainWhite}
+                                    alt="ai"
+                                    style={{ width: 25, height: 25 }}
+                                  />
+                                )}
+                              </Avatar>
+                            </ListItemAvatar>
+                            <pre
+                              style={{
+                                margin: 0,
+                                whiteSpace: "pre-wrap",
                                 wordBreak: "break-word",
-                                textAlign: "left",
+                                maxWidth: "100%",
+                                overflowWrap: "break-word",
                               }}
-                              primaryTypographyProps={{
-                                color: "text.primary",
-                                fontSize: "0.9rem",
-                              }}
-                              secondaryTypographyProps={{
-                                fontSize: "0.75rem",
-                                mt: 0.5,
-                                textAlign: "right",
-                              }}
-                            />
-                          </pre>
-                        </Box>
-                      </ListItem>
-                    </Box>
-                  ))}
-                  {waitingResponse && (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        marginLeft: "10px",
-                        marginBottom: "5px",
-                        width: "40px",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <FadeInBox number={1} />
-                      <FadeInBox number={2} />
-                      <FadeInBox number={3} />
-                    </Box>
-                  )}
-                  <div ref={messagesEndRef} />
-                </List>
-              )}
-            </Box>
-          </Stack>
-        </CardContent>
-        <DragOverlay />
-        <CardActions
-          sx={{ display: "flex", justifyContent: "space-between", p: 2 }}
-        >
-          <MultilineTextField
-            placeholder="Ask about your tasks or projects..."
-            widthParam="100%"
-            isFullWidth
-            inputRef={inputData}
-            handleChange={handleChangeInput}
-          />
-          <Tooltip title="send" placement="top">
-            <IconButton
-              aria-label="send"
-              size="large"
-              ref={sendButtonRef}
-              onClick={() =>
-                handleCreateMessage(inputData.current.value, "user")
-              }
-            >
-              <SendIcon fontSize="inherit" />
-            </IconButton>
-          </Tooltip>
-          <IconButton
-            size="medium"
-            onClick={onClose}
-            sx={{ position: "absolute", top: 10, right: 10 }}
+                            >
+                              <ListItemText
+                                primary={msg.text}
+                                secondary={msg.time.toLocaleTimeString(
+                                  "ru-RU",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )}
+                                sx={{
+                                  bgcolor:
+                                    msg.sender === "user"
+                                      ? "#e3f2fd"
+                                      : "#f5f5f5",
+                                  p: 1.5,
+                                  borderRadius: 2,
+                                  wordBreak: "break-word",
+                                  textAlign: "left",
+                                }}
+                                primaryTypographyProps={{
+                                  color: "text.primary",
+                                  fontSize: "0.9rem",
+                                }}
+                                secondaryTypographyProps={{
+                                  fontSize: "0.75rem",
+                                  mt: 0.5,
+                                  textAlign: "right",
+                                }}
+                              />
+                            </pre>
+                          </Box>
+                        </ListItem>
+                      </Box>
+                    ))}
+                    {waitingResponse && (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          marginLeft: "10px",
+                          marginBottom: "5px",
+                          width: "40px",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <FadeInBox number={1} />
+                        <FadeInBox number={2} />
+                        <FadeInBox number={3} />
+                      </Box>
+                    )}
+                    <div ref={messagesEndRef} />
+                  </List>
+                )}
+              </Box>
+            </Stack>
+          </CardContent>
+          <DragOverlay />
+          <CardActions
+            sx={{ display: "flex", justifyContent: "space-between", p: 2 }}
           >
-            <CloseIcon />
-          </IconButton>
-        </CardActions>
-      </Card>
-    </Dialog>
+            <MultilineTextField
+              placeholder="Ask about your tasks or projects..."
+              widthParam="100%"
+              isFullWidth
+              inputRef={inputData}
+              handleChange={handleChangeInput}
+            />
+            <Tooltip title="upload" placement="top">
+              <IconButton
+                aria-label="upload"
+                size="large"
+                component="label"
+                onClick={() => {}}
+              >
+                <VisuallyHiddenInput
+                  type="file"
+                  onChange={(event) => {
+                    if (files.length + 1 > maxFilesCount) return;
+                    setFiles((prev) => {
+                      const uploadedFiles = event.target.files;
+                      const newFiles = [];
+                      for (let i = 0; i < uploadedFiles.length; i++) {
+                        const fileWithPreview = Object.assign(
+                          uploadedFiles[i],
+                          {
+                            preview: URL.createObjectURL(uploadedFiles[i]),
+                          },
+                        );
+                        newFiles.push(fileWithPreview);
+                      }
+                      return [...prev, ...newFiles];
+                    });
+                  }}
+                  multiple
+                />
+                <UploadIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="send" placement="top">
+              <IconButton
+                aria-label="send"
+                size="large"
+                ref={sendButtonRef}
+                onClick={() =>
+                  handleCreateMessage(inputData.current.value, "user")
+                }
+              >
+                <SendIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+            <IconButton
+              size="medium"
+              onClick={onClose}
+              sx={{ position: "absolute", top: 10, right: 10 }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </CardActions>
+        </Card>
+      </Dialog>
+    </RecomendationsContext.Provider>
   );
 }

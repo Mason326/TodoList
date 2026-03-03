@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Box, IconButton, Icon, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import blank from "../../../../assets/fileBlanket.jpg";
 import { AnimationWrapping } from "./AnimationWrapping";
-
-const maxFilesCount = 5;
+import { RecomendationsContext } from "../RecomendationsModal";
 
 const thumbsContainerShow = {
   display: "flex",
@@ -45,8 +44,8 @@ const img = {
 };
 
 export function DragOverlay() {
-  const [files, setFiles] = useState([]);
-  const [previewDisplay, setPreviewDisplay] = useState(true);
+  const { files, setFiles, previewDisplay, setPreviewDisplay, maxFilesCount } =
+    useContext(RecomendationsContext);
   const {
     getRootProps,
     getInputProps,
@@ -70,8 +69,8 @@ export function DragOverlay() {
   });
 
   useEffect(() => {
-    setPreviewDisplay(!isDragActive);
-  }, [isDragActive]);
+    setPreviewDisplay(!isDragGlobal);
+  }, [isDragGlobal]);
 
   const extensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "ico"];
 
@@ -139,29 +138,6 @@ export function DragOverlay() {
 
   return (
     <div style={{ minHeight: "3vh", padding: "0px 20px" }}>
-      {isDragGlobal && !isDragActive && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0, 123, 255, 0.1)",
-            border: "3px dashed #007bff",
-            pointerEvents: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <h2 style={{ color: "#007bff" }}>
-            Please, drop files into dashed block
-          </h2>
-        </div>
-      )}
-
       <section className="container">
         <div
           {...getRootProps({
