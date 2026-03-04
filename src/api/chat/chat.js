@@ -24,3 +24,44 @@ export async function createMessage(messageContent, messageOwner) {
     throw e;
   }
 }
+
+export async function createAttachmentWithId(attachmentId, fileName) {
+  try {
+    const { data, error } = await supabase
+      .from("attachments")
+      .insert([
+        {
+          attachment_id: `${attachmentId}`,
+          file_id: `${fileName}`,
+        },
+      ])
+      .select();
+    console.log(error);
+    console.log(data);
+    if (error) return error;
+
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function createAttachment(fileName) {
+  try {
+    const { data, error } = await supabase
+      .from("attachments")
+      .insert([
+        {
+          file_id: `${fileName}`,
+        },
+      ])
+      .select();
+    console.log(error);
+    console.log(data);
+    if (error) return error;
+
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}

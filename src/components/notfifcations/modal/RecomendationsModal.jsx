@@ -23,7 +23,12 @@ import {
   ListItemAvatar,
   Avatar,
 } from "@mui/material";
-import { createMessage, fetchMessages } from "../../../api/chat/chat";
+import {
+  createAttachment,
+  createAttachmentWithId,
+  createMessage,
+  fetchMessages,
+} from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
 import { AppContext } from "../../../context/AppContext";
@@ -117,9 +122,31 @@ export default function Recomendations({ open, onClose }) {
     inputData.current.value = newVal;
   }
 
-  function handleCreateMessage(messageContent, messageOwner) {
+  async function handleCreateMessage(messageContent, messageOwner) {
     if (messageContent.trim().length > 0) {
-      createMessage(messageContent, messageOwner)
+      const uploadedFiles = await Promise.all(
+        files.map((file) => uploadFile(user.id, file)),
+      );
+      let firstAttachment = null;
+      for (let i = 0; i < uploadedFiles.length; i++) {
+        const fileData = uploadedFiles[i];
+        const fileDataPathByParts = fileData.path.split("/");
+        if (i === 0) {
+          firstAttachment = await createAttachment(
+            fileDataPathByParts[fileDataPathByParts.length - 1],
+          );
+          console.log(`Attachment 1: ${JSON.stringify(firstAttachment)}`);
+        } else {
+          console.log(
+            `Attachment ${i + 1}: ${JSON.stringify(fileDataPathByParts[fileDataPathByParts.length - 1])}`,
+          );
+          await createAttachmentWithId(
+            firstAttachment[0].attachment_id,
+            fileDataPathByParts[fileDataPathByParts.length - 1],
+          );
+        }
+      }
+      await createMessage(messageContent, messageOwner)
         .then(() => {
           setMessages((prev) => [
             ...prev,
@@ -129,12 +156,6 @@ export default function Recomendations({ open, onClose }) {
               sender: `${messageOwner}`,
             },
           ]);
-        })
-        .then(() => {
-          files.forEach((value) => {
-            uploadFile(user.id, value);
-            console.log(`${value} uploaded`);
-          });
         })
         .then(() => {
           if (messageOwner == "user") {

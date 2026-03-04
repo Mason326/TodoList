@@ -36,7 +36,7 @@ export async function uploadFile(userId, file) {
   const { data, error } = await supabase.storage
     .from(FILE_BUCKET_NAME)
     .upload(
-      `${userId}/upload/${fileName}_${Date.now().toString()}_${Math.ceil(Math.random() * 100000)}.${fileExtension}`,
+      `${userId}/upload/${fileName.replaceAll(" ", "")}_${Date.now().toString()}_${Math.ceil(Math.random() * 100000)}.${fileExtension}`,
       file,
     );
   if (error) throw error;
