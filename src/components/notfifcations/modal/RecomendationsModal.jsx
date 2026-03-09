@@ -12,30 +12,22 @@ import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
 import UploadIcon from "@mui/icons-material/Upload";
 import PersonIcon from "@mui/icons-material/Person";
+import ImageIcon from "@mui/icons-material/Image";
 import { styled } from "@mui/material/styles";
+import DescriptionIcon from "@mui/icons-material/Description";
 import {
   List,
-  Paper,
-  Button,
   ListItem,
-  ListItemIcon,
   ListItemText,
   ListItemAvatar,
   Avatar,
 } from "@mui/material";
-import {
-  createAttachment,
-  createAttachmentWithId,
-  createMessage,
-  fetchMessages,
-} from "../../../api/chat/chat";
+import { createMessage, fetchMessages } from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
 import { AppContext } from "../../../context/AppContext";
 import { sendToAgent } from "../../../api/client/sendToAgent";
 import FadeInBox from "./components/DotComponent";
-import { useDropzone } from "react-dropzone";
-import { motion, AnimatePresence } from "framer-motion";
 import { DragOverlay } from "./components/DragOverlay";
 import { createContext } from "react";
 import { uploadFile } from "../../../api/supabase/supabase-utils/db";
@@ -108,6 +100,7 @@ export default function Recomendations({ open, onClose }) {
               text: `${item.message_content}`,
               time: new Date(item.created_at),
               sender: `${item.message_owner}`,
+              attachments: item.attachments,
             };
           }),
         );
@@ -125,28 +118,14 @@ export default function Recomendations({ open, onClose }) {
   async function handleCreateMessage(messageContent, messageOwner) {
     if (messageContent.trim().length > 0) {
       const uploadedFiles = await Promise.all(
-        files.map((file) => uploadFile(user.id, file)),
+        files.map((file) =>
+          uploadFile(user.id, file).then((data) => ({
+            displayName: file.name,
+            filePath: data.fullPath,
+          })),
+        ),
       );
-      let firstAttachment = null;
-      for (let i = 0; i < uploadedFiles.length; i++) {
-        const fileData = uploadedFiles[i];
-        const fileDataPathByParts = fileData.path.split("/");
-        if (i === 0) {
-          firstAttachment = await createAttachment(
-            fileDataPathByParts[fileDataPathByParts.length - 1],
-          );
-          console.log(`Attachment 1: ${JSON.stringify(firstAttachment)}`);
-        } else {
-          console.log(
-            `Attachment ${i + 1}: ${JSON.stringify(fileDataPathByParts[fileDataPathByParts.length - 1])}`,
-          );
-          await createAttachmentWithId(
-            firstAttachment[0].attachment_id,
-            fileDataPathByParts[fileDataPathByParts.length - 1],
-          );
-        }
-      }
-      await createMessage(messageContent, messageOwner)
+      await createMessage(messageContent, messageOwner, uploadedFiles)
         .then(() => {
           setMessages((prev) => [
             ...prev,
@@ -431,6 +410,70 @@ export default function Recomendations({ open, onClose }) {
                                   textAlign: "right",
                                 }}
                               />
+                              {msg.attachments?.length > 0 && (
+                                <List
+                                  sx={{
+                                    bgcolor: "#e3f2fd",
+                                    borderRadius: 2,
+                                    textAlign: "left",
+                                  }}
+                                >
+                                  {msg.attachments.map((item) => {
+                                    const attachmentObject = JSON.parse(item);
+                                    const attachmentName =
+                                      attachmentObject.displayName;
+                                    return (
+                                      <ListItem
+                                        key={attachmentObject.filePath}
+                                        sx={{
+                                          ":hover": {
+                                            cursor: "pointer",
+                                          },
+                                        }}
+                                        onClick={() => console.log("Click")}
+                                      >
+                                        <ListItemAvatar>
+                                          <Avatar
+                                            sx={{
+                                              bgcolor: "gray",
+                                              width: 36,
+                                              height: 36,
+                                            }}
+                                          >
+                                            {[
+                                              "jpg",
+                                              "jpeg",
+                                              "png",
+                                              "gif",
+                                              "bmp",
+                                              "webp",
+                                              "ico",
+                                              "svg",
+                                            ].includes(
+                                              attachmentName.split(".")[
+                                                attachmentName.split(".")
+                                                  .length - 1
+                                              ],
+                                            ) ? (
+                                              <ImageIcon />
+                                            ) : (
+                                              <DescriptionIcon />
+                                            )}
+                                          </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText>
+                                          <Typography
+                                            color="gray"
+                                            fontSize={14}
+                                          >
+                                            {attachmentName}
+                                          </Typography>
+                                        </ListItemText>
+                                      </ListItem>
+                                    );
+                                  })}
+                                </List>
+                              )}
                             </pre>
                           </Box>
                         </ListItem>

@@ -44,6 +44,20 @@ export async function uploadFile(userId, file) {
   return data;
 }
 
+export async function retriveLinkToFile(filePath) {
+  try {
+    let { data, error } = await supabase.storage
+      .from(FILE_BUCKET_NAME)
+      .createSignedUrl(filePath, 60);
+
+    if (error) return error;
+    console.log(data);
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}
+
 export async function fetchAllTasks() {
   try {
     let { data: tasks, error } = await supabase.from("tasks").select("*");
