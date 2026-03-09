@@ -30,7 +30,10 @@ import { sendToAgent } from "../../../api/client/sendToAgent";
 import FadeInBox from "./components/DotComponent";
 import { DragOverlay } from "./components/DragOverlay";
 import { createContext } from "react";
-import { uploadFile } from "../../../api/supabase/supabase-utils/db";
+import {
+  requestDownload,
+  uploadFile,
+} from "../../../api/supabase/supabase-utils/db";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -121,7 +124,7 @@ export default function Recomendations({ open, onClose }) {
         files.map((file) =>
           uploadFile(user.id, file).then((data) => ({
             displayName: file.name,
-            filePath: data.fullPath,
+            filePath: data.path,
           })),
         ),
       );
@@ -430,7 +433,12 @@ export default function Recomendations({ open, onClose }) {
                                             cursor: "pointer",
                                           },
                                         }}
-                                        onClick={() => console.log("Click")}
+                                        onClick={() =>
+                                          requestDownload(
+                                            attachmentObject.filePath,
+                                            attachmentName,
+                                          )
+                                        }
                                       >
                                         <ListItemAvatar>
                                           <Avatar

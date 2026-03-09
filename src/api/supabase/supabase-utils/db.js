@@ -44,6 +44,34 @@ export async function uploadFile(userId, file) {
   return data;
 }
 
+export async function requestDownload(pathToFile, customName) {
+  try {
+    const { data, error } = await supabase.storage
+      .from(FILE_BUCKET_NAME)
+      .download(pathToFile, {
+        download: customName,
+      });
+
+    if (error) return error;
+
+    if (data) {
+      const url = window.URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = customName;
+      document.body.appendChild(link);
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    }
+
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}
+
 export async function retriveLinkToFile(filePath) {
   try {
     let { data, error } = await supabase.storage
