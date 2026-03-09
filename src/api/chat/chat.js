@@ -32,6 +32,7 @@ export async function createMessage(
         },
       ])
       .select();
+    return data;
   } catch (e) {
     throw e;
   }

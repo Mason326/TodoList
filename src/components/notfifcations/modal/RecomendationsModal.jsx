@@ -129,13 +129,14 @@ export default function Recomendations({ open, onClose }) {
         ),
       );
       await createMessage(messageContent, messageOwner, uploadedFiles)
-        .then(() => {
+        .then((data) => {
           setMessages((prev) => [
             ...prev,
             {
               text: `${messageContent}`,
               time: new Date(),
               sender: `${messageOwner}`,
+              attachments: data[0].attachments,
             },
           ]);
         })
