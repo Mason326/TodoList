@@ -32,8 +32,14 @@ export const supabaseAdmin = createClient(
 async function main(
   request: Request<{}, any, any, QueryString.ParsedQs, Record<string, any>>,
 ) {
-  const { prevMessages = [], projectWithTasks, message } = request.body;
+  const {
+    prevMessages = [],
+    projectWithTasks,
+    message,
+    uploadedFiles,
+  } = request.body;
   token = (request as any).accessToken;
+
   const mcpServer = new MCPServerStreamableHttp({
     url: "http://localhost:2222/mcp",
     name: "MCP server for supabase actions",
@@ -48,7 +54,9 @@ async function main(
   console.log("Connecting to MCP server...");
   await mcpServer.connect();
   console.log("MCP server connected successfully");
+
   let response = null;
+
   try {
     const todolistAgent = new Agent({
       name: "TodoList Agent",
@@ -62,18 +70,61 @@ async function main(
       time: Date;
       sender: string;
     }[];
+
     const history = previousMessages.map((item) => {
       return item.sender == "ai" ? assistant(item.text) : user(item.text);
     });
 
+    const inputFiles: {
+      type: "input_file";
+      file: string;
+      filename: string;
+    }[] = [];
+
+    for (let i = 0; i < uploadedFiles.length; i++) {
+      const fileUrl = uploadedFiles[i].filePath;
+
+      console.log("Downloading PDF file...");
+      const fileData = await fetch(fileUrl);
+      console.log("File fetched, status:", fileData.status);
+
+      if (!fileData.ok) {
+        throw new Error(`Failed to fetch file: ${fileData.statusText}`);
+      }
+
+      const arrayBuffer = await fileData.arrayBuffer();
+      const base64Data = Buffer.from(arrayBuffer).toString("base64");
+
+      inputFiles.push({
+        type: "input_file",
+        file: `data:application/pdf;base64,${base64Data}`,
+        filename: uploadedFiles[i].displayName,
+      });
+
+      console.log(`PDF downloaded, size: ${arrayBuffer.byteLength} bytes`);
+    }
+
+    const userMessageContent = [
+      {
+        type: "input_text",
+        text: message,
+      },
+      ...inputFiles,
+    ];
+
+    console.log("Running agent with file...");
+
     response = await run(todolistAgent, [
       user(`${projectWithTasks}`),
       ...history,
-      user(`${message}`),
+      user(userMessageContent as any),
     ]);
+
+    console.log("Agent response received");
   } finally {
     await mcpServer.close();
   }
+
   return response;
 }
 
@@ -88,5 +139,5 @@ app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log("Server is running");
+  console.log("Server is running on port", PORT);
 });

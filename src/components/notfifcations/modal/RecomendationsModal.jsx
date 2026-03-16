@@ -4,31 +4,56 @@ import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import aiBrain from "../../../assets/aiBrain.svg";
 import aiBrainWhite from "../../../assets/aiBrainWhite.svg";
 import { CircularProgress, Dialog, IconButton, Tooltip } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import CloseIcon from "@mui/icons-material/Close";
+import UploadIcon from "@mui/icons-material/Upload";
 import PersonIcon from "@mui/icons-material/Person";
+import ImageIcon from "@mui/icons-material/Image";
+import { styled } from "@mui/material/styles";
+import DescriptionIcon from "@mui/icons-material/Description";
 import {
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
+  ListItemAvatar,
   Avatar,
 } from "@mui/material";
-// import { askGPT } from "../../../api/gpt/requestGPT";
 import { createMessage, fetchMessages } from "../../../api/chat/chat";
 import MultilineTextField from "../../textFields/MultiLineTextField";
 import { AuthContext } from "../../../App";
 import { AppContext } from "../../../context/AppContext";
 import { sendToAgent } from "../../../api/client/sendToAgent";
 import FadeInBox from "./components/DotComponent";
+import { DragOverlay } from "./components/DragOverlay";
+import { createContext } from "react";
+import {
+  requestDownload,
+  retriveLinkToFile,
+  uploadFile,
+} from "../../../api/supabase/supabase-utils/db";
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
+
+export const RecomendationsContext = createContext();
 
 export default function Recomendations({ open, onClose }) {
-  const { session } = useContext(AuthContext);
+  const [files, setFiles] = useState([]);
+  const [previewDisplay, setPreviewDisplay] = useState(true);
+  const { user, session } = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const inputData = useRef(null);
@@ -79,11 +104,14 @@ export default function Recomendations({ open, onClose }) {
               text: `${item.message_content}`,
               time: new Date(item.created_at),
               sender: `${item.message_owner}`,
+              attachments: item.attachments,
             };
           }),
         );
         setLoading(false);
       });
+    } else {
+      setFiles([]);
     }
   }, [open]);
 
@@ -91,29 +119,39 @@ export default function Recomendations({ open, onClose }) {
     inputData.current.value = newVal;
   }
 
-  function handleCreateMessage(messageContent, messageOwner) {
+  async function handleCreateMessage(messageContent, messageOwner) {
     if (messageContent.trim().length > 0) {
-      createMessage(messageContent, messageOwner)
-        .then(() => {
+      const uploadedFiles = await Promise.all(
+        files.map((file) =>
+          uploadFile(user.id, file).then((data) => ({
+            displayName: file.name,
+            filePath: data.signedUrl,
+          })),
+        ),
+      );
+      await createMessage(messageContent, messageOwner, uploadedFiles)
+        .then((data) => {
           setMessages((prev) => [
             ...prev,
             {
               text: `${messageContent}`,
               time: new Date(),
               sender: `${messageOwner}`,
+              attachments: data[0].attachments,
             },
           ]);
         })
         .then(() => {
           if (messageOwner == "user") {
-            handleAskAI(messageContent);
+            handleAskAI(messageContent, uploadedFiles);
             inputData.current.value = "";
           }
         });
+      setFiles([]);
     }
   }
 
-  function handleAskAI(questionText) {
+  function handleAskAI(questionText, uploadedFiles) {
     setWaitingResponse(true);
     const projectWithTasks = {};
     for (const project of projects) {
@@ -125,6 +163,7 @@ export default function Recomendations({ open, onClose }) {
       messages.slice(-6),
       JSON.stringify(projectWithTasks),
       questionText,
+      uploadedFiles,
       session?.access_token,
     ).then((data) => {
       createMessage(`${data}`, "ai").then(() => {
@@ -217,226 +256,325 @@ export default function Recomendations({ open, onClose }) {
   }
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-      fullWidth
-      maxWidth="md"
+    <RecomendationsContext.Provider
+      value={{
+        files,
+        setFiles,
+        previewDisplay,
+        setPreviewDisplay,
+      }}
     >
-      <Card variant="outlined">
-        <CardContent sx={{ p: 2 }}>
-          <Stack sx={{ width: "100%", textAlign: "center" }} spacing={2}>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 1.5,
-              }}
-            >
-              <Box>
-                <img srcSet={aiBrain} alt="ai" width="64px" height="64px" />
-              </Box>
-              <Typography variant="h4">AI Assistant</Typography>
-            </Box>
-            <Typography
-              color="text.secondary"
-              component="div"
-              sx={{ textAlign: "justify" }}
-            >
-              This AI Assistant is able to provide recommendations on how to
-              complete assigned tasks in projects.
-            </Typography>
-            <Box
-              sx={{
-                height: 300,
-                overflow: "auto",
-                mb: 2,
-                p: 2,
-                bgcolor: "#f8f9fa",
-                borderRadius: 2,
-              }}
-              ref={messagesContainerRef}
-            >
-              {loading ? (
-                <Box
-                  sx={{
-                    height: "100%",
-                    alignContent: "center",
-                  }}
-                >
-                  <Stack spacing={2} alignItems="center">
-                    <CircularProgress
-                      color="inherit"
-                      sx={{ margin: "auto" }}
-                      size={40}
-                    />
-                    <Typography color="text.secondary" sx={{ fontSize: 14 }}>
-                      Loading your chat... Please wait!
-                    </Typography>
-                  </Stack>
+      <Dialog
+        open={open}
+        onClose={onClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+        fullWidth
+        maxWidth="md"
+      >
+        <Card variant="outlined">
+          <CardContent sx={{ p: 2 }}>
+            <Stack sx={{ width: "100%", textAlign: "center" }} spacing={2}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: 1.5,
+                }}
+              >
+                <Box>
+                  <img srcSet={aiBrain} alt="ai" width="64px" height="64px" />
                 </Box>
-              ) : (
-                <List sx={{ width: "100" }}>
-                  {messages.map((msg, index) => (
-                    <Box key={index}>
-                      {placeDateIfNeeded(index)}
-                      <ListItem
-                        key={index}
-                        sx={{
-                          display: "flex",
-                          justifyContent:
-                            msg.sender === "user" ? "flex-end" : "flex-start",
-                          alignItems: "flex-start",
-                          width: "100%",
-                          px: 0,
-                        }}
-                      >
-                        <Box
+                <Typography variant="h4">AI Assistant</Typography>
+              </Box>
+              <Typography
+                color="text.secondary"
+                component="div"
+                sx={{ textAlign: "justify" }}
+              >
+                This AI Assistant is able to provide recommendations on how to
+                complete assigned tasks in projects.
+              </Typography>
+              <Box
+                sx={{
+                  height: 300,
+                  overflow: "auto",
+                  mb: 2,
+                  p: 2,
+                  bgcolor: "#f8f9fa",
+                  borderRadius: 2,
+                }}
+                ref={messagesContainerRef}
+              >
+                {loading ? (
+                  <Box
+                    sx={{
+                      height: "100%",
+                      alignContent: "center",
+                    }}
+                  >
+                    <Stack spacing={2} alignItems="center">
+                      <CircularProgress
+                        color="inherit"
+                        sx={{ margin: "auto" }}
+                        size={40}
+                      />
+                      <Typography color="text.secondary" sx={{ fontSize: 14 }}>
+                        Loading your chat... Please wait!
+                      </Typography>
+                    </Stack>
+                  </Box>
+                ) : (
+                  <List sx={{ width: "100" }}>
+                    {messages.map((msg, index) => (
+                      <Box key={index}>
+                        {placeDateIfNeeded(index)}
+                        <ListItem
+                          key={index}
                           sx={{
                             display: "flex",
-                            flexDirection:
-                              msg.sender === "user" ? "row-reverse" : "row",
+                            justifyContent:
+                              msg.sender === "user" ? "flex-end" : "flex-start",
                             alignItems: "flex-start",
-                            maxWidth: "80%",
+                            width: "100%",
+                            px: 0,
                           }}
                         >
-                          <ListItemAvatar
+                          <Box
                             sx={{
-                              minWidth: "auto",
-                              mr: msg.sender === "user" ? 0 : 1,
-                              ml: msg.sender === "user" ? 1 : 0,
+                              display: "flex",
+                              flexDirection:
+                                msg.sender === "user" ? "row-reverse" : "row",
+                              alignItems: "flex-start",
+                              maxWidth: "80%",
                             }}
                           >
-                            <Avatar
+                            <ListItemAvatar
                               sx={{
-                                bgcolor:
-                                  msg.sender === "user"
-                                    ? "primary.main"
-                                    : "black",
-                                width: 36,
-                                height: 36,
+                                minWidth: "auto",
+                                mr: msg.sender === "user" ? 0 : 1,
+                                ml: msg.sender === "user" ? 1 : 0,
                               }}
                             >
-                              {msg.sender === "user" ? (
-                                <PersonIcon fontSize="small" />
-                              ) : (
-                                <img
-                                  srcSet={aiBrainWhite}
-                                  alt="ai"
-                                  style={{ width: 25, height: 25 }}
-                                />
-                              )}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <pre
-                            style={{
-                              margin: 0,
-                              whiteSpace: "pre-wrap",
-                              wordBreak: "break-word",
-                              maxWidth: "100%",
-                              overflowWrap: "break-word",
-                            }}
-                          >
-                            <ListItemText
-                              primary={msg.text}
-                              secondary={msg.time.toLocaleTimeString("ru-RU", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                              sx={{
-                                bgcolor:
-                                  msg.sender === "user" ? "#e3f2fd" : "#f5f5f5",
-                                p: 1.5,
-                                borderRadius: 2,
+                              <Avatar
+                                sx={{
+                                  bgcolor:
+                                    msg.sender === "user"
+                                      ? "primary.main"
+                                      : "black",
+                                  width: 36,
+                                  height: 36,
+                                }}
+                              >
+                                {msg.sender === "user" ? (
+                                  <PersonIcon fontSize="small" />
+                                ) : (
+                                  <img
+                                    srcSet={aiBrainWhite}
+                                    alt="ai"
+                                    style={{ width: 25, height: 25 }}
+                                  />
+                                )}
+                              </Avatar>
+                            </ListItemAvatar>
+                            <pre
+                              style={{
+                                margin: 0,
+                                whiteSpace: "pre-wrap",
                                 wordBreak: "break-word",
-                                textAlign: "left",
+                                maxWidth: "100%",
+                                overflowWrap: "break-word",
                               }}
-                              primaryTypographyProps={{
-                                color: "text.primary",
-                                fontSize: "0.9rem",
-                              }}
-                              secondaryTypographyProps={{
-                                fontSize: "0.75rem",
-                                mt: 0.5,
-                                textAlign: "right",
-                              }}
-                            />
-                          </pre>
-                        </Box>
-                      </ListItem>
-                    </Box>
-                  ))}
-                  {waitingResponse && (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        marginLeft: "10px",
-                        marginBottom: "5px",
-                        width: "40px",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <FadeInBox number={1} />
-                      <FadeInBox number={2} />
-                      <FadeInBox number={3} />
-                      {/* <Box
-                        sx={{
-                          width: "10px",
-                          height: "10px",
-                          background: "red",
-                          borderRadius: "50%",
-                        }}
-                      ></Box>
+                            >
+                              <ListItemText
+                                primary={msg.text}
+                                secondary={msg.time.toLocaleTimeString(
+                                  "ru-RU",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )}
+                                sx={{
+                                  bgcolor:
+                                    msg.sender === "user"
+                                      ? "#e3f2fd"
+                                      : "#f5f5f5",
+                                  p: 1.5,
+                                  borderRadius: 2,
+                                  wordBreak: "break-word",
+                                  textAlign: "left",
+                                }}
+                                primaryTypographyProps={{
+                                  color: "text.primary",
+                                  fontSize: "0.9rem",
+                                }}
+                                secondaryTypographyProps={{
+                                  fontSize: "0.75rem",
+                                  mt: 0.5,
+                                  textAlign: "right",
+                                }}
+                              />
+                              {msg.attachments?.length > 0 && (
+                                <List
+                                  sx={{
+                                    bgcolor: "#e3f2fd",
+                                    borderRadius: 2,
+                                    textAlign: "left",
+                                  }}
+                                >
+                                  {msg.attachments.map((item) => {
+                                    const attachmentObject = JSON.parse(item);
+                                    const attachmentName =
+                                      attachmentObject.displayName;
+                                    return (
+                                      <ListItem
+                                        key={`${attachmentObject.filePath}_${Date.now()}_${Math.random()}`}
+                                        sx={{
+                                          ":hover": {
+                                            cursor: "pointer",
+                                          },
+                                        }}
+                                        onClick={() =>
+                                          requestDownload(
+                                            attachmentObject.filePath,
+                                            attachmentName,
+                                          )
+                                        }
+                                      >
+                                        <ListItemAvatar>
+                                          <Avatar
+                                            sx={{
+                                              bgcolor: "gray",
+                                              width: 36,
+                                              height: 36,
+                                            }}
+                                          >
+                                            {[
+                                              "jpg",
+                                              "jpeg",
+                                              "png",
+                                              "gif",
+                                              "bmp",
+                                              "webp",
+                                              "ico",
+                                              "svg",
+                                            ].includes(
+                                              attachmentName.split(".")[
+                                                attachmentName.split(".")
+                                                  .length - 1
+                                              ],
+                                            ) ? (
+                                              <ImageIcon />
+                                            ) : (
+                                              <DescriptionIcon />
+                                            )}
+                                          </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText>
+                                          <Typography
+                                            color="gray"
+                                            fontSize={14}
+                                          >
+                                            {attachmentName}
+                                          </Typography>
+                                        </ListItemText>
+                                      </ListItem>
+                                    );
+                                  })}
+                                </List>
+                              )}
+                            </pre>
+                          </Box>
+                        </ListItem>
+                      </Box>
+                    ))}
+                    {waitingResponse && (
                       <Box
                         sx={{
-                          width: "10px",
-                          height: "10px",
-                          background: "red",
-                          borderRadius: "50%",
+                          display: "flex",
+                          marginLeft: "10px",
+                          marginBottom: "5px",
+                          width: "40px",
+                          justifyContent: "space-between",
                         }}
-                      ></Box> */}
-                    </Box>
-                  )}
-                  <div ref={messagesEndRef} />
-                </List>
-              )}
-            </Box>
-          </Stack>
-        </CardContent>
-        <CardActions
-          sx={{ display: "flex", justifyContent: "space-between", p: 2 }}
-        >
-          <MultilineTextField
-            placeholder="Ask about your tasks or projects..."
-            widthParam="100%"
-            isFullWidth
-            inputRef={inputData}
-            handleChange={handleChangeInput}
-          />
-          <Tooltip title="send" placement="top">
-            <IconButton
-              aria-label="send"
-              size="large"
-              ref={sendButtonRef}
-              onClick={() =>
-                handleCreateMessage(inputData.current.value, "user")
-              }
-            >
-              <SendIcon fontSize="inherit" />
-            </IconButton>
-          </Tooltip>
-          <IconButton
-            size="medium"
-            onClick={onClose}
-            sx={{ position: "absolute", top: 10, right: 10 }}
+                      >
+                        <FadeInBox number={1} />
+                        <FadeInBox number={2} />
+                        <FadeInBox number={3} />
+                      </Box>
+                    )}
+                    <div ref={messagesEndRef} />
+                  </List>
+                )}
+              </Box>
+            </Stack>
+          </CardContent>
+          <DragOverlay />
+          <CardActions
+            sx={{ display: "flex", justifyContent: "space-between", p: 2 }}
           >
-            <CloseIcon />
-          </IconButton>
-        </CardActions>
-      </Card>
-    </Dialog>
+            <MultilineTextField
+              placeholder="Ask about your tasks or projects..."
+              widthParam="100%"
+              isFullWidth
+              inputRef={inputData}
+              handleChange={handleChangeInput}
+            />
+            <Tooltip title="upload" placement="top">
+              <IconButton
+                aria-label="upload"
+                size="large"
+                component="label"
+                onClick={() => {}}
+              >
+                <VisuallyHiddenInput
+                  type="file"
+                  onChange={(event) => {
+                    setFiles((prev) => {
+                      const uploadedFiles = event.target.files;
+                      const newFiles = [];
+                      for (let i = 0; i < uploadedFiles.length; i++) {
+                        const fileWithPreview = Object.assign(
+                          uploadedFiles[i],
+                          {
+                            preview: URL.createObjectURL(uploadedFiles[i]),
+                          },
+                        );
+                        newFiles.push(fileWithPreview);
+                      }
+                      // uploadFile(user.id, uploadedFiles);
+                      return [...prev, ...newFiles];
+                    });
+                  }}
+                  multiple
+                />
+                <UploadIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="send" placement="top">
+              <IconButton
+                aria-label="send"
+                size="large"
+                ref={sendButtonRef}
+                onClick={() =>
+                  handleCreateMessage(inputData.current.value, "user")
+                }
+              >
+                <SendIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+            <IconButton
+              size="medium"
+              onClick={onClose}
+              sx={{ position: "absolute", top: 10, right: 10 }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </CardActions>
+        </Card>
+      </Dialog>
+    </RecomendationsContext.Provider>
   );
 }

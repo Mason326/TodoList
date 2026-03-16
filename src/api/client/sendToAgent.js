@@ -2,6 +2,7 @@ export const sendToAgent = async (
   prevMessages,
   projectWithTasks,
   message,
+  uploadedFiles,
   token,
 ) => {
   try {
@@ -11,7 +12,12 @@ export const sendToAgent = async (
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ prevMessages, projectWithTasks, message }),
+      body: JSON.stringify({
+        prevMessages,
+        projectWithTasks,
+        message,
+        uploadedFiles,
+      }),
     });
 
     if (!response.ok) {
