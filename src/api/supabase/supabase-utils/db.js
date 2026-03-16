@@ -41,7 +41,12 @@ export async function uploadFile(userId, file) {
     );
   if (error) throw error;
 
-  return data;
+  const publicUrl = await retriveLinkToFile(data.path);
+
+  return {
+    ...data,
+    signedUrl: publicUrl.signedUrl,
+  };
 }
 
 export async function requestDownload(pathToFile, customName) {
@@ -76,7 +81,7 @@ export async function retriveLinkToFile(filePath) {
   try {
     let { data, error } = await supabase.storage
       .from(FILE_BUCKET_NAME)
-      .createSignedUrl(filePath, 3600, {
+      .createSignedUrl(filePath, 120, {
         download: true,
       });
 

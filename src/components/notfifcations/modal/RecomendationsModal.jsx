@@ -85,9 +85,6 @@ export default function Recomendations({ open, onClose }) {
   useEffect(() => {
     scrollToBottom();
     enableEnterSending();
-    retriveLinkToFile(
-      "704c8143-a7fd-4a36-b7c5-3d8ae01e3fbf/upload/todo_1773126927341_57560.txt",
-    );
   }, [messages]);
 
   useEffect(() => {
@@ -128,7 +125,7 @@ export default function Recomendations({ open, onClose }) {
         files.map((file) =>
           uploadFile(user.id, file).then((data) => ({
             displayName: file.name,
-            filePath: data.path,
+            filePath: data.signedUrl,
           })),
         ),
       );
@@ -146,7 +143,7 @@ export default function Recomendations({ open, onClose }) {
         })
         .then(() => {
           if (messageOwner == "user") {
-            handleAskAI(messageContent);
+            handleAskAI(messageContent, uploadedFiles);
             inputData.current.value = "";
           }
         });
@@ -154,7 +151,7 @@ export default function Recomendations({ open, onClose }) {
     }
   }
 
-  function handleAskAI(questionText) {
+  function handleAskAI(questionText, uploadedFiles) {
     setWaitingResponse(true);
     const projectWithTasks = {};
     for (const project of projects) {
@@ -166,6 +163,7 @@ export default function Recomendations({ open, onClose }) {
       messages.slice(-6),
       JSON.stringify(projectWithTasks),
       questionText,
+      uploadedFiles,
       session?.access_token,
     ).then((data) => {
       createMessage(`${data}`, "ai").then(() => {
@@ -432,7 +430,7 @@ export default function Recomendations({ open, onClose }) {
                                       attachmentObject.displayName;
                                     return (
                                       <ListItem
-                                        key={attachmentObject.filePath}
+                                        key={`${attachmentObject.filePath}_${Date.now()}_${Math.random()}`}
                                         sx={{
                                           ":hover": {
                                             cursor: "pointer",

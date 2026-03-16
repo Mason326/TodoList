@@ -32,7 +32,12 @@ export const supabaseAdmin = createClient(
 async function main(
   request: Request<{}, any, any, QueryString.ParsedQs, Record<string, any>>,
 ) {
-  const { prevMessages = [], projectWithTasks, message } = request.body;
+  const {
+    prevMessages = [],
+    projectWithTasks,
+    message,
+    uploadedFiles,
+  } = request.body;
   token = (request as any).accessToken;
 
   const mcpServer = new MCPServerStreamableHttp({
@@ -70,32 +75,41 @@ async function main(
       return item.sender == "ai" ? assistant(item.text) : user(item.text);
     });
 
-    const fileUrl =
-      "http://localhost:8000/storage/v1/object/sign/ChatFilesBucket/704c8143-a7fd-4a36-b7c5-3d8ae01e3fbf/upload/day5.pdf?token=eyJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJDaGF0RmlsZXNCdWNrZXQvNzA0YzgxNDMtYTdmZC00YTM2LWI3YzUtM2Q4YWUwMWUzZmJmL3VwbG9hZC9kYXk1LnBkZiIsImlhdCI6MTc3MzYzNDM4OCwiZXhwIjoxNzc0MjM5MTg4fQ.gFfKwX9g3aLGwldKNKfQQ-whlSyQh_9DK2sxR6YGgNg";
+    const inputFiles: {
+      type: "input_file";
+      file: string;
+      filename: string;
+    }[] = [];
 
-    console.log("Downloading PDF file...");
-    const fileData = await fetch(fileUrl);
-    console.log("File fetched, status:", fileData.status);
+    for (let i = 0; i < uploadedFiles.length; i++) {
+      const fileUrl = uploadedFiles[i].filePath;
 
-    if (!fileData.ok) {
-      throw new Error(`Failed to fetch file: ${fileData.statusText}`);
+      console.log("Downloading PDF file...");
+      const fileData = await fetch(fileUrl);
+      console.log("File fetched, status:", fileData.status);
+
+      if (!fileData.ok) {
+        throw new Error(`Failed to fetch file: ${fileData.statusText}`);
+      }
+
+      const arrayBuffer = await fileData.arrayBuffer();
+      const base64Data = Buffer.from(arrayBuffer).toString("base64");
+
+      inputFiles.push({
+        type: "input_file",
+        file: `data:application/pdf;base64,${base64Data}`,
+        filename: uploadedFiles[i].displayName,
+      });
+
+      console.log(`PDF downloaded, size: ${arrayBuffer.byteLength} bytes`);
     }
-
-    const arrayBuffer = await fileData.arrayBuffer();
-    const base64Data = Buffer.from(arrayBuffer).toString("base64");
-
-    console.log(`PDF downloaded, size: ${arrayBuffer.byteLength} bytes`);
 
     const userMessageContent = [
       {
         type: "input_text",
         text: message,
       },
-      {
-        type: "input_file",
-        file: `data:application/pdf;base64,${base64Data}`,
-        filename: "document.pdf",
-      },
+      ...inputFiles,
     ];
 
     console.log("Running agent with file...");
