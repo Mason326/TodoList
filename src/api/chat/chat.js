@@ -12,23 +12,26 @@ export async function fetchMessages() {
 export async function createMessage(
   messageContent,
   messageOwner,
-  uploadedFiles,
+  uploadedFiles = null,
 ) {
   try {
-    const arrFiles = uploadedFiles.map((item) =>
-      JSON.stringify({
-        displayName: item.displayName,
-        filePath: item.filePath,
-      }),
-    );
-    console.log(arrFiles);
+    let arrFiles = null;
+    if (uploadedFiles) {
+      arrFiles = uploadedFiles.map((item) =>
+        JSON.stringify({
+          displayName: item.displayName,
+          filePath: item.filePath,
+        }),
+      );
+      console.log(arrFiles);
+    }
     const { data, error } = await supabase
       .from("messages")
       .insert([
         {
           message_content: `${messageContent}`,
           message_owner: `${messageOwner}`,
-          attachments: arrFiles ?? null,
+          attachments: arrFiles,
         },
       ])
       .select();

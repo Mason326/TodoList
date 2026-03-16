@@ -32,6 +32,7 @@ import { DragOverlay } from "./components/DragOverlay";
 import { createContext } from "react";
 import {
   requestDownload,
+  retriveLinkToFile,
   uploadFile,
 } from "../../../api/supabase/supabase-utils/db";
 
@@ -84,6 +85,9 @@ export default function Recomendations({ open, onClose }) {
   useEffect(() => {
     scrollToBottom();
     enableEnterSending();
+    retriveLinkToFile(
+      "704c8143-a7fd-4a36-b7c5-3d8ae01e3fbf/upload/todo_1773126927341_57560.txt",
+    );
   }, [messages]);
 
   useEffect(() => {

@@ -76,7 +76,9 @@ export async function retriveLinkToFile(filePath) {
   try {
     let { data, error } = await supabase.storage
       .from(FILE_BUCKET_NAME)
-      .createSignedUrl(filePath, 60);
+      .createSignedUrl(filePath, 3600, {
+        download: true,
+      });
 
     if (error) return error;
     console.log(data);
