@@ -32,7 +32,6 @@ import { DragOverlay } from "./components/DragOverlay";
 import { createContext } from "react";
 import {
   requestDownload,
-  retriveLinkToFile,
   uploadFile,
 } from "../../../api/supabase/supabase-utils/db";
 
@@ -126,6 +125,7 @@ export default function Recomendations({ open, onClose }) {
           uploadFile(user.id, file).then((data) => ({
             displayName: file.name,
             filePath: data.signedUrl,
+            downloadPath: data.path,
           })),
         ),
       );
@@ -438,7 +438,7 @@ export default function Recomendations({ open, onClose }) {
                                         }}
                                         onClick={() =>
                                           requestDownload(
-                                            attachmentObject.filePath,
+                                            attachmentObject.downloadPath,
                                             attachmentName,
                                           )
                                         }
@@ -544,7 +544,6 @@ export default function Recomendations({ open, onClose }) {
                         );
                         newFiles.push(fileWithPreview);
                       }
-                      // uploadFile(user.id, uploadedFiles);
                       return [...prev, ...newFiles];
                     });
                   }}

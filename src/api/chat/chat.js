@@ -21,6 +21,7 @@ export async function createMessage(
         JSON.stringify({
           displayName: item.displayName,
           filePath: item.filePath,
+          downloadPath: item.downloadPath,
         }),
       );
       console.log(arrFiles);

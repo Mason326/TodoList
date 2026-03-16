@@ -51,6 +51,7 @@ export async function uploadFile(userId, file) {
 
 export async function requestDownload(pathToFile, customName) {
   try {
+    console.log(pathToFile);
     const { data, error } = await supabase.storage
       .from(FILE_BUCKET_NAME)
       .download(pathToFile, {
