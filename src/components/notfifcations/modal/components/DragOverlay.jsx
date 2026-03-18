@@ -56,6 +56,13 @@ export function DragOverlay() {
     isDragReject,
     acceptedFiles,
   } = useDropzone({
+    accept: {
+      "image/png": [".png"],
+      "image/jpeg": [".jpg", ".jpeg"],
+      "image/gif": [".gif"],
+      "image/webp": [".webp"],
+      "application/pdf": [".pdf"],
+    },
     onDrop: (acceptedFiles) => {
       setFiles((prev) => {
         const newFiles = acceptedFiles.map((file) =>
@@ -72,7 +79,7 @@ export function DragOverlay() {
     setPreviewDisplay(!isDragGlobal);
   }, [isDragGlobal]);
 
-  const extensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "ico"];
+  const extensions = ["jpg", "jpeg", "png", "gif", "webp"];
 
   const thumbs = files.map((file) => (
     <AnimationWrapping key={file.preview}>

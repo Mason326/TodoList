@@ -81,27 +81,75 @@ async function main(
       filename: string;
     }[] = [];
 
+    const inputImages: {
+      type: "input_image";
+      image: string;
+      providerData: {
+        detail: string;
+      };
+    }[] = [];
+
     for (let i = 0; i < uploadedFiles.length; i++) {
       const fileUrl = uploadedFiles[i].filePath;
+      const fileNameByParts = uploadedFiles[i].displayName.split(".");
+      const ext = fileNameByParts[fileNameByParts.length - 1];
+      const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
 
-      console.log("Downloading PDF file...");
-      const fileData = await fetch(fileUrl);
-      console.log("File fetched, status:", fileData.status);
+      if (ext == "pdf") {
+        console.log("Downloading PDF file...");
+        const fileData = await fetch(fileUrl);
+        console.log("File fetched, status:", fileData.status);
 
-      if (!fileData.ok) {
-        throw new Error(`Failed to fetch file: ${fileData.statusText}`);
+        if (!fileData.ok) {
+          throw new Error(`Failed to fetch file: ${fileData.statusText}`);
+        }
+
+        const arrayBuffer = await fileData.arrayBuffer();
+        const base64Data = Buffer.from(arrayBuffer).toString("base64");
+
+        inputFiles.push({
+          type: "input_file",
+          file: `data:application/pdf;base64,${base64Data}`,
+          filename: uploadedFiles[i].displayName,
+        });
+
+        console.log(`PDF downloaded, size: ${arrayBuffer.byteLength} bytes`);
+      } else if (imageExtensions.includes(ext)) {
+        console.log("Downloading image...");
+        const fileData = await fetch(fileUrl);
+        console.log("Image fetched, status:", fileData.status);
+
+        let mimeType = "image/jpeg";
+        switch (ext) {
+          case "jpg":
+          case "jpeg":
+            mimeType = "image/jpeg";
+            break;
+          case "png":
+            mimeType = "image/png";
+            break;
+          case "gif":
+            mimeType = "image/gif";
+            break;
+          case "webp":
+            mimeType = "image/webp";
+            break;
+        }
+
+        if (!fileData.ok) {
+          throw new Error(`Failed to fetch file: ${fileData.statusText}`);
+        }
+
+        const arrayBuffer = await fileData.arrayBuffer();
+        const base64Data = Buffer.from(arrayBuffer).toString("base64");
+        inputImages.push({
+          type: "input_image",
+          image: `data:${mimeType};base64,${base64Data}`,
+          providerData: {
+            detail: "auto",
+          },
+        });
       }
-
-      const arrayBuffer = await fileData.arrayBuffer();
-      const base64Data = Buffer.from(arrayBuffer).toString("base64");
-
-      inputFiles.push({
-        type: "input_file",
-        file: `data:application/pdf;base64,${base64Data}`,
-        filename: uploadedFiles[i].displayName,
-      });
-
-      console.log(`PDF downloaded, size: ${arrayBuffer.byteLength} bytes`);
     }
 
     const userMessageContent = [
@@ -110,6 +158,7 @@ async function main(
         text: message,
       },
       ...inputFiles,
+      ...inputImages,
     ];
 
     console.log("Running agent with file...");

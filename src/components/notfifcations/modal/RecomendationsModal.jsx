@@ -32,7 +32,6 @@ import { DragOverlay } from "./components/DragOverlay";
 import { createContext } from "react";
 import {
   requestDownload,
-  retriveLinkToFile,
   uploadFile,
 } from "../../../api/supabase/supabase-utils/db";
 
@@ -59,7 +58,7 @@ export default function Recomendations({ open, onClose }) {
   const inputData = useRef(null);
   const sendButtonRef = useRef(null);
   const messagesContainerRef = useRef(null);
-  const { projects, allTasks } = useContext(AppContext);
+  const { projects, allTasks, setSnackbar } = useContext(AppContext);
   const messagesEndRef = useRef(null);
   const [waitingResponse, setWaitingResponse] = useState(false);
 
@@ -126,6 +125,7 @@ export default function Recomendations({ open, onClose }) {
           uploadFile(user.id, file).then((data) => ({
             displayName: file.name,
             filePath: data.signedUrl,
+            downloadPath: data.path,
           })),
         ),
       );
@@ -166,17 +166,27 @@ export default function Recomendations({ open, onClose }) {
       uploadedFiles,
       session?.access_token,
     ).then((data) => {
-      createMessage(`${data}`, "ai").then(() => {
+      const error = JSON.parse(data).error;
+      if (!error) {
+        createMessage(`${data}`, "ai").then(() => {
+          setWaitingResponse(false);
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: `${data}`,
+              time: new Date(),
+              sender: `ai`,
+            },
+          ]);
+        });
+      } else {
         setWaitingResponse(false);
-        setMessages((prev) => [
-          ...prev,
-          {
-            text: `${data}`,
-            time: new Date(),
-            sender: `ai`,
-          },
-        ]);
-      });
+        setSnackbar({
+          isShowed: true,
+          severity: "error",
+          text: `Agent issue: ${error}`,
+        });
+      }
     });
   }
 
@@ -438,7 +448,7 @@ export default function Recomendations({ open, onClose }) {
                                         }}
                                         onClick={() =>
                                           requestDownload(
-                                            attachmentObject.filePath,
+                                            attachmentObject.downloadPath,
                                             attachmentName,
                                           )
                                         }
@@ -531,20 +541,29 @@ export default function Recomendations({ open, onClose }) {
               >
                 <VisuallyHiddenInput
                   type="file"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.pdf"
                   onChange={(event) => {
                     setFiles((prev) => {
                       const uploadedFiles = event.target.files;
+                      const allowedFileTypes = [
+                        "image/jpeg",
+                        "image/png",
+                        "image/gif",
+                        "image/webp",
+                        "application/pdf",
+                      ];
                       const newFiles = [];
                       for (let i = 0; i < uploadedFiles.length; i++) {
-                        const fileWithPreview = Object.assign(
-                          uploadedFiles[i],
-                          {
-                            preview: URL.createObjectURL(uploadedFiles[i]),
-                          },
-                        );
-                        newFiles.push(fileWithPreview);
+                        if (allowedFileTypes.includes(uploadedFiles[i].type)) {
+                          const fileWithPreview = Object.assign(
+                            uploadedFiles[i],
+                            {
+                              preview: URL.createObjectURL(uploadedFiles[i]),
+                            },
+                          );
+                          newFiles.push(fileWithPreview);
+                        }
                       }
-                      // uploadFile(user.id, uploadedFiles);
                       return [...prev, ...newFiles];
                     });
                   }}
