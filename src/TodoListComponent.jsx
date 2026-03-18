@@ -141,6 +141,7 @@ function TodoList() {
             visiblePage: handleChangeVisibilty,
             projects: createdProjects,
             allTasks: allTasks,
+            setSnackbar: setSnackbar,
           }}
         >
           <Box sx={{ position: "fixed", right: 25, bottom: 25 }}>

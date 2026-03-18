@@ -87,7 +87,6 @@ export async function retriveLinkToFile(filePath) {
       });
 
     if (error) return error;
-    console.log(data);
     return data;
   } catch (e) {
     throw e;

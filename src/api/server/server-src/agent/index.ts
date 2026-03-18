@@ -93,16 +93,7 @@ async function main(
       const fileUrl = uploadedFiles[i].filePath;
       const fileNameByParts = uploadedFiles[i].displayName.split(".");
       const ext = fileNameByParts[fileNameByParts.length - 1];
-      const imageExtensions = [
-        "jpg",
-        "jpeg",
-        "png",
-        "gif",
-        "bmp",
-        "webp",
-        "ico",
-        "svg",
-      ];
+      const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
 
       if (ext == "pdf") {
         console.log("Downloading PDF file...");
@@ -142,12 +133,6 @@ async function main(
             break;
           case "webp":
             mimeType = "image/webp";
-            break;
-          case "svg":
-            mimeType = "image/svg+xml";
-            break;
-          case "ico":
-            mimeType = "image/x-icon";
             break;
         }
 

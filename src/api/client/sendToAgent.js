@@ -32,7 +32,6 @@ export const sendToAgent = async (
     console.warn("Unexpected response structure:", data);
     return JSON.stringify(data, null, 2);
   } catch (error) {
-    console.error("Error:", error);
-    throw error;
+    return JSON.stringify({ error: error.message });
   }
 };
