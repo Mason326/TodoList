@@ -166,14 +166,14 @@ export default function Recomendations({ open, onClose }) {
       uploadedFiles,
       session?.access_token,
     ).then((data) => {
-      const error = JSON.parse(data).error;
+      const error = JSON.parse(data)?.error;
       if (!error) {
-        createMessage(`${data}`, "ai").then(() => {
+        createMessage(`${JSON.parse(data)?.output}`, "ai").then(() => {
           setWaitingResponse(false);
           setMessages((prev) => [
             ...prev,
             {
-              text: `${data}`,
+              text: `${JSON.parse(data)?.output}`,
               time: new Date(),
               sender: `ai`,
             },

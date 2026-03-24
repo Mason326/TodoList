@@ -17,7 +17,7 @@ import cors from "cors";
 import { createUserClient } from "./supabase-server-tools/userManagement.js";
 import { SupabaseClient } from "@supabase/supabase-js";
 
-dotenv.config({ path: "../../.env" });
+dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -65,7 +65,7 @@ app.post("/mcp", async (req, res) => {
         transports[sessionId] = transport;
       },
       enableDnsRebindingProtection: true,
-      allowedHosts: ["localhost:2222"],
+      allowedHosts: [`http://mcp:${PORT}`],
     });
     transport.onclose = () => {
       if (transport.sessionId) {
@@ -78,7 +78,7 @@ app.post("/mcp", async (req, res) => {
     });
 
     server.server.onerror = (error) => {
-      log("Server error:", error);
+      log("Server error:", JSON.stringify(error));
     };
 
     log("Registering tools...");

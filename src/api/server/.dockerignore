@@ -10,5 +10,5 @@ reset.sh
 README.md
 dev
 volumes
-src/api/server
+server-src
 # .env
