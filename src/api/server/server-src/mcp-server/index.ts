@@ -22,6 +22,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 const PORT = 2222;
+const PORT_AGENT = 1234;
 
 const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 export function log(message: string, data?: any) {
@@ -65,7 +66,7 @@ app.post("/mcp", async (req, res) => {
         transports[sessionId] = transport;
       },
       enableDnsRebindingProtection: true,
-      allowedHosts: [`http://mcp:${PORT}`],
+      allowedHosts: [`agent:${PORT_AGENT}`],
     });
     transport.onclose = () => {
       if (transport.sessionId) {

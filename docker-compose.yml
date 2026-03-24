@@ -8,7 +8,7 @@
 name: supabase
 
 services:
-  app:
+  frontend:
     build: .
     ports:
       - 8888:8888
