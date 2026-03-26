@@ -66,8 +66,9 @@ app.post("/mcp", async (req, res) => {
         transports[sessionId] = transport;
       },
       enableDnsRebindingProtection: true,
-      allowedHosts: [`agent:${PORT_AGENT}`],
+      allowedHosts: [`agent:${PORT_AGENT}`, `mcp:${PORT}`],
     });
+
     transport.onclose = () => {
       if (transport.sessionId) {
         delete transports[transport.sessionId];

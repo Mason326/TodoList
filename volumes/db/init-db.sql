@@ -43,12 +43,23 @@ create table public.messages (
   user_id uuid not null default auth.uid (),
   message_content text not null,
   message_owner public.message_owner not null default 'user'::message_owner,
+  attachments json[] null,
   constraint messages_pkey primary key (message_id)
 ) TABLESPACE pg_default;
+
+insert into storage.buckets (id, name) values ('ChatFilesBucket', 'ChatFilesBucket')
+
+ALTER PUBLICATION supabase_realtime ADD TABLE public.projects;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
 
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE storage.buckets ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE projects REPLICA IDENTITY FULL;
+ALTER TABLE tasks REPLICA IDENTITY FULL;
 
 create policy "Enable users to view their own data only"
 on "public"."projects"
@@ -138,4 +149,52 @@ for INSERT
 to public
 with check (
   (select auth.uid()) = user_id
+);
+
+create policy "Enable read access for all users"
+on "storage"."objects"
+for select using (true);
+
+create policy "Enable delete for users based on user_id"
+on "storage"."objects"
+for delete using (
+  (select auth.uid()) = owner
+);  
+
+create policy "Enable insert for users based on user_id"
+on "storage"."objects"
+for insert with check (
+  (select auth.uid()) = owner
+);
+
+create policy "Enable update for users based on user_id"
+on "storage"."objects"
+for update with check (
+  (select auth.uid()) = owner
+);
+
+create policy "Enable users to view their own data only"
+on "storage"."buckets"
+for select
+to authenticated
+using (
+  (select auth.uid()) = owner
+);
+
+create policy "Enable insert for users based on user_id"
+on "storage"."buckets"
+for insert with check (
+  (select auth.uid()) = owner
+);
+
+create policy "Enable update for users based on user_id"
+on "storage"."buckets"
+for update with check (
+  (select auth.uid()) = owner
+);
+
+create policy "Enable delete for users based on user_id"
+on "storage"."buckets"
+for delete using (
+  (select auth.uid()) = owner
 );

@@ -177,6 +177,8 @@ async function main(
     ]);
 
     console.log("Agent response received");
+  } catch (e) {
+    console.log(JSON.stringify(e));
   } finally {
     await mcpServer.close();
   }
