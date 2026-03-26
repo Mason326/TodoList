@@ -97,7 +97,8 @@ async function main(
     }[] = [];
 
     for (let i = 0; i < uploadedFiles.length; i++) {
-      const fileUrl = uploadedFiles[i].filePath;
+      const fileUrl = uploadedFiles[i].filePath.replace("localhost", "kong");
+      // console.log(fileUrl);
       const fileNameByParts = uploadedFiles[i].displayName.split(".");
       const ext = fileNameByParts[fileNameByParts.length - 1];
       const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
