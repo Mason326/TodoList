@@ -27,12 +27,22 @@ export async function supabaseAuthMiddleware(req: any, res: any, next: any) {
     }
 
     const token = authHeader.split(" ")[1];
+    console.log(token);
     const {
       data: { user },
       error,
     } = await supabaseAdmin.auth.getUser(token);
+    console.log(user);
+    console.log(supabaseAdmin);
+    console.log(error);
 
     if (error || !user) {
+      console.error("Supabase error details:", {
+        message: error?.message,
+        status: error?.status,
+        name: error?.name,
+      });
+
       return res.status(401).json({ error: "Invalid token" });
     }
 

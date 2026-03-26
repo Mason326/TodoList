@@ -19,6 +19,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 const PORT = 1234;
+const MCP_PORT = 2222;
 export let token: string = "";
 
 export const supabaseAdmin = createClient(
@@ -26,6 +27,11 @@ export const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || "",
   {
     auth: { autoRefreshToken: false, persistSession: false },
+    global: {
+      headers: {
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+      },
+    },
   },
 );
 
@@ -41,10 +47,11 @@ async function main(
   token = (request as any).accessToken;
 
   const mcpServer = new MCPServerStreamableHttp({
-    url: "http://localhost:2222/mcp",
+    url: `http://mcp:${MCP_PORT}/mcp`,
     name: "MCP server for supabase actions",
     requestInit: {
       headers: {
+        Host: `localhost:${MCP_PORT}`,
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
@@ -90,7 +97,8 @@ async function main(
     }[] = [];
 
     for (let i = 0; i < uploadedFiles.length; i++) {
-      const fileUrl = uploadedFiles[i].filePath;
+      const fileUrl = uploadedFiles[i].filePath.replace("localhost", "kong");
+      // console.log(fileUrl);
       const fileNameByParts = uploadedFiles[i].displayName.split(".");
       const ext = fileNameByParts[fileNameByParts.length - 1];
       const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
@@ -170,6 +178,8 @@ async function main(
     ]);
 
     console.log("Agent response received");
+  } catch (e) {
+    console.log(JSON.stringify(e));
   } finally {
     await mcpServer.close();
   }
@@ -179,6 +189,7 @@ async function main(
 
 app.post("/api/agent", supabaseAuthMiddleware, async (req, res) => {
   try {
+    console.log("Fetch api passed");
     const response = await main(req);
     res.json({ response });
   } catch (error: any) {
