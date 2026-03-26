@@ -47,10 +47,10 @@ create table public.messages (
   constraint messages_pkey primary key (message_id)
 ) TABLESPACE pg_default;
 
-insert into storage.buckets (id, name) values ('ChatFilesBucket', 'ChatFilesBucket')
+insert into storage.buckets (id, name) values ('ChatFilesBucket', 'ChatFilesBucket');
 
-ALTER PUBLICATION supabase_realtime ADD TABLE public.projects;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
+DROP PUBLICATION IF EXISTS supabase_realtime;
+CREATE PUBLICATION supabase_realtime FOR TABLE public.projects, public.tasks;
 
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
