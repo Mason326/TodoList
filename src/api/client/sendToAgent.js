@@ -2,6 +2,7 @@ export const sendToAgent = async (
   prevMessages,
   projectWithTasks,
   message,
+  uploadedFiles,
   token,
 ) => {
   try {
@@ -11,22 +12,27 @@ export const sendToAgent = async (
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ prevMessages, projectWithTasks, message }),
+      body: JSON.stringify({
+        prevMessages,
+        projectWithTasks,
+        message,
+        uploadedFiles,
+      }),
     });
 
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
 
+    console.log(response);
     const data = await response.json();
     if (data.response?.state?.currentStep?.output) {
-      return data.response.state.currentStep.output;
+      return JSON.stringify({ output: data.response.state.currentStep.output });
     }
 
     console.warn("Unexpected response structure:", data);
     return JSON.stringify(data, null, 2);
   } catch (error) {
-    console.error("Error:", error);
-    throw error;
+    return JSON.stringify({ error: error.message });
   }
 };

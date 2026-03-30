@@ -9,17 +9,34 @@ export async function fetchMessages() {
   }
 }
 
-export async function createMessage(messageContent, messageOwner) {
+export async function createMessage(
+  messageContent,
+  messageOwner,
+  uploadedFiles = null,
+) {
   try {
+    let arrFiles = null;
+    if (uploadedFiles) {
+      arrFiles = uploadedFiles.map((item) =>
+        JSON.stringify({
+          displayName: item.displayName,
+          filePath: item.filePath,
+          downloadPath: item.downloadPath,
+        }),
+      );
+      console.log(arrFiles);
+    }
     const { data, error } = await supabase
       .from("messages")
       .insert([
         {
           message_content: `${messageContent}`,
           message_owner: `${messageOwner}`,
+          attachments: arrFiles,
         },
       ])
       .select();
+    return data;
   } catch (e) {
     throw e;
   }

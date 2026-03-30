@@ -1,5 +1,7 @@
 import { supabase } from "../supabase-client/index.js";
 
+const FILE_BUCKET_NAME = "ChatFilesBucket";
+
 export default async function fetchData() {
   try {
     let { data: projects, error } = await supabase.from("projects").select("*");
@@ -16,6 +18,76 @@ export async function fetchTasks(project_id) {
       .select("*")
       .eq("project_id", `${project_id}`);
     return tasks;
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function uploadFile(userId, file) {
+  const fileByParts = file.name.split(".");
+  let fileName = "";
+  let fileExtension = "";
+  if (fileByParts.length >= 2) {
+    fileExtension = fileByParts[fileByParts.length - 1];
+    fileName = fileByParts.splice(0, fileByParts.length - 1).join("");
+  } else {
+    fileName = file.name;
+  }
+  const { data, error } = await supabase.storage
+    .from(FILE_BUCKET_NAME)
+    .upload(
+      `${userId}/upload/${fileName.replaceAll(" ", "")}_${Date.now().toString()}_${Math.ceil(Math.random() * 100000)}.${fileExtension}`,
+      file,
+    );
+  if (error) throw error;
+
+  const publicUrl = await retriveLinkToFile(data.path);
+
+  return {
+    ...data,
+    signedUrl: publicUrl.signedUrl,
+  };
+}
+
+export async function requestDownload(pathToFile, customName) {
+  try {
+    console.log(pathToFile);
+    const { data, error } = await supabase.storage
+      .from(FILE_BUCKET_NAME)
+      .download(pathToFile, {
+        download: customName,
+      });
+
+    if (error) return error;
+
+    if (data) {
+      const url = window.URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = customName;
+      document.body.appendChild(link);
+      link.click();
+
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    }
+
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function retriveLinkToFile(filePath) {
+  try {
+    let { data, error } = await supabase.storage
+      .from(FILE_BUCKET_NAME)
+      .createSignedUrl(filePath, 120, {
+        download: true,
+      });
+
+    if (error) return error;
+    return data;
   } catch (e) {
     throw e;
   }

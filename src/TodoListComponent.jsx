@@ -141,6 +141,7 @@ function TodoList() {
             visiblePage: handleChangeVisibilty,
             projects: createdProjects,
             allTasks: allTasks,
+            setSnackbar: setSnackbar,
           }}
         >
           <Box sx={{ position: "fixed", right: 25, bottom: 25 }}>
@@ -174,9 +175,11 @@ function TodoList() {
               />
             ) : pageVisibility !== -1 ? (
               <PageComponent
-                neededObj={createdProjects.findLast(
-                  (elem) => elem.project_id == pageVisibility,
-                )}
+                neededObj={
+                  createdProjects.findLast(
+                    (elem) => elem.project_id == pageVisibility,
+                  ) ?? setPageVisibility(-1)
+                }
                 onProjectDelete={handleShowModal}
               />
             ) : (
@@ -189,7 +192,7 @@ function TodoList() {
                 projectTitle={
                   createdProjects.findLast(
                     (elem) => elem.project_id == pageVisibility,
-                  ).project_name
+                  )?.project_name ?? setPageVisibility(-1)
                 }
               />
             )}
