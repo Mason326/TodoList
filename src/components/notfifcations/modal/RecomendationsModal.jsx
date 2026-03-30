@@ -119,7 +119,7 @@ export default function Recomendations({ open, onClose }) {
   }
 
   async function handleCreateMessage(messageContent, messageOwner) {
-    if (messageContent.trim().length > 0) {
+    if (messageContent.trim().length > 0 || files.length > 0) {
       const uploadedFiles = await Promise.all(
         files.map((file) =>
           uploadFile(user.id, file).then((data) => ({
