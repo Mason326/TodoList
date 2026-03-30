@@ -12,18 +12,12 @@ This project is a todolist with supabase authentication and a little helper as a
 - Rename the .env.example file to .env;
 - Replace the variable values ​​in the .env file:
   ```dotenv
-      VITE_SUPABASE_URL=
-      VITE_SERVICE_ROLE_KEY=
-      VITE_SUPABASE_KEY=
       OPENAI_API_KEY=
   ```
 - Rename the src/api/server/.env.example file to src/api/server/.env;
 - Replace the variable values ​​in the src/api/server/.env:
   ```dotenv
       OPENAI_API_KEY=
-      SUPABASE_ANON_KEY=
-      SUPABASE_SERVICE_ROLE_KEY=
-      SUPABASE_URL=
   ```
 - To avoid using placeholders in variables, you can use the variable value generation script in utils/gen-keys.sh;
 - After that you need to run docker (of course you need docker itself for this):
